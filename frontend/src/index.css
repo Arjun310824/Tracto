@@ -252,3 +252,56 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     display: none !important;
   }
 }
+
+/* Custom Login Page Aesthetics */
+.auth-bg {
+  background: radial-gradient(circle at 10% 20%, rgba(22, 163, 74, 0.08) 0%, rgba(15, 23, 42, 0.03) 90%), #f8fafc;
+}
+
+.login-hero-card {
+  background: linear-gradient(135deg, #052e16 0%, #064e3b 50%, #047857 100%);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-hero-card::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+}
+
+.login-glass-box {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.input-group-modern {
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.input-group-modern:focus-within {
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+  border-color: #16a34a !important;
+}
+
+.demo-role-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-width: 1.5px;
+}
+
+.demo-role-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
