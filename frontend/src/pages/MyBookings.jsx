@@ -204,14 +204,21 @@ function MyBookings() {
                           </Link>
                         )}
 
-                        {b.status === "completed" && (
-                          <button
-                            className="btn btn-warning text-dark btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5"
-                            onClick={() => setSelectedReviewBooking(b)}
-                          >
-                            <FaStar /> Rate & Review
-                          </button>
+                        {(b.status === "paid" || b.status === "completed") && (
+                          b.review ? (
+                            <span className="badge bg-warning-subtle text-warning border border-warning-subtle fw-bold px-3 py-2 rounded-pill d-flex align-items-center gap-1">
+                              <FaStar className="text-warning" /> Reviewed ({b.review.rating}★)
+                            </span>
+                          ) : (
+                            <button
+                              className="btn btn-warning text-dark btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-sm"
+                              onClick={() => setSelectedReviewBooking(b)}
+                            >
+                              <FaStar /> Rate & Review
+                            </button>
+                          )
                         )}
+
 
                         {(b.status === "pending" || b.status === "approved") && (
                           <button

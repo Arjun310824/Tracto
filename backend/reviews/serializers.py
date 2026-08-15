@@ -1,15 +1,18 @@
 from rest_framework import serializers
 from .models import Review
 from accounts.serializers import UserSerializer
+from rental.serializers import TractorSerializer
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     customer_details = UserSerializer(source="customer", read_only=True)
+    tractor_details = TractorSerializer(source="tractor", read_only=True)
 
     class Meta:
         model = Review
         fields = "__all__"
         read_only_fields = ["customer", "tractor", "created_at"]
+
 
     def validate(self, attrs):
         booking = attrs.get("booking")

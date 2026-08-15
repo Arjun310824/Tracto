@@ -4,12 +4,21 @@ from django.db.models import Q
 from .models import Booking
 from accounts.serializers import UserSerializer
 from rental.serializers import TractorSerializer, ImplementSerializer
+from reviews.models import Review
+
+
+class SimpleReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["id", "rating", "comment", "created_at"]
 
 
 class BookingSerializer(serializers.ModelSerializer):
     customer_details = UserSerializer(source="customer", read_only=True)
     tractor_details = TractorSerializer(source="tractor", read_only=True)
     implement_details = ImplementSerializer(source="selected_implements", many=True, read_only=True)
+    review = SimpleReviewSerializer(read_only=True)
+
 
     class Meta:
         model = Booking
