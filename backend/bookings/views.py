@@ -186,4 +186,26 @@ class BookingViewSet(viewsets.ModelViewSet):
             notification_type="booking_cancelled"
         )
 
-        return Response({"message": "Booking cancelled successfully.", "status": booking.status}, status=status.HTTP_200_OK)
+        return Response({"message": "Booking cancelled successfully.", "status": booking.status}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="update-meter")
+    def update_meter(self, request, pk=None):
+        booking = self.get_object()
+        if request.user.role not in ["owner", "admin"] and request.user != booking.customer:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+
+        start_meter = request.data.get("start_meter_hours")
+        end_meter = request.data.get("end_meter_hours")
+
+        if start_meter is not None:
+            booking.start_meter_hours = float(start_meter)
+        if end_meter is not None:
+            booking.end_meter_hours = float(end_meter)
+
+        booking.save()
+        return Response({
+            "message": "Meter hours updated successfully",
+            "start_meter_hours": booking.start_meter_hours,
+            "end_meter_hours": booking.end_meter_hours
+        }, status=status.HTTP_200_OK)
+

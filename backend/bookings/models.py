@@ -79,7 +79,11 @@ class Booking(models.Model):
     )
 
 
+    start_meter_hours = models.DecimalField(max_digits=8, decimal_places=1, default=0.0, null=True, blank=True)
+    end_meter_hours = models.DecimalField(max_digits=8, decimal_places=1, default=0.0, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"TRC{self.id:05d} - {self.customer.email} - {self.tractor.name}"
