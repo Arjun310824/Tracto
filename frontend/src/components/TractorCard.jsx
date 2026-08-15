@@ -9,14 +9,15 @@ function TractorCard({ tractor, onWishlistToggle }) {
   const [isFav, setIsFav] = useState(tractor.is_favorite || false);
   const [loading, setLoading] = useState(false);
 
-  const defaultImg = "http://127.0.0.1:8000/media/tractors/mahindra_gen.png";
-
+  const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/").replace(/\/api\/?$/, "");
+  const defaultImg = `${BACKEND_BASE}/media/tractors/mahindra_gen.png`;
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return defaultImg;
     if (imagePath.startsWith("http")) return imagePath;
-    return `http://127.0.0.1:8000${imagePath}`;
+    return `${BACKEND_BASE}${imagePath}`;
   };
+
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();

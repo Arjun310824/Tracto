@@ -56,16 +56,18 @@ function TractorDetails() {
     );
   }
 
-  const defaultImg = "http://127.0.0.1:8000/media/tractors/mahindra_gen.png";
-  const mainImage = tractor.image ? (tractor.image.startsWith("http") ? tractor.image : `http://127.0.0.1:8000${tractor.image}`) : defaultImg;
+  const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/").replace(/\/api\/?$/, "");
+  const defaultImg = `${BACKEND_BASE}/media/tractors/mahindra_gen.png`;
+  const mainImage = tractor.image ? (tractor.image.startsWith("http") ? tractor.image : `${BACKEND_BASE}${tractor.image}`) : defaultImg;
 
   const galleryImages = [mainImage];
   if (tractor.additional_images && tractor.additional_images.length > 0) {
     tractor.additional_images.forEach((imgObj) => {
-      const url = imgObj.image.startsWith("http") ? imgObj.image : `http://127.0.0.1:8000${imgObj.image}`;
+      const url = imgObj.image.startsWith("http") ? imgObj.image : `${BACKEND_BASE}${imgObj.image}`;
       galleryImages.push(url);
     });
   }
+
 
   return (
     <div className="bg-light min-vh-100">
