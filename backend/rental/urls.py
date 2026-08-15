@@ -13,8 +13,11 @@ router.register(r"wishlist", WishlistViewSet, basename="wishlist")
 
 urlpatterns = [
     path("ai-recommend/", ai_recommend_machinery_view, name="ai-recommend-machinery"),
+    path("rental/ai-recommend/", ai_recommend_machinery_view, name="rental-ai-recommend-machinery"),
     path("ai-price-advisor/", ai_price_advisor_view, name="ai-price-advisor"),
+    path("rental/ai-price-advisor/", ai_price_advisor_view, name="rental-ai-price-advisor"),
     path("", include(router.urls)),
 ]
+
 
 

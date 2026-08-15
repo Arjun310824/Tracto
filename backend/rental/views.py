@@ -199,7 +199,7 @@ class WishlistViewSet(viewsets.ModelViewSet):
 
 
 @api_view(["POST"])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([permissions.AllowAny])
 def ai_recommend_machinery_view(request):
     data = request.data
     crop_type = data.get("crop_type", "general")
@@ -219,7 +219,7 @@ def ai_recommend_machinery_view(request):
 
 
 @api_view(["POST"])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([permissions.AllowAny])
 def ai_price_advisor_view(request):
     data = request.data
     horsepower = data.get("horsepower", 45)
