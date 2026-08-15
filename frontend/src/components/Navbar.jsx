@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle, FaRobot } from "react-icons/fa";
-
+import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle, FaRobot, FaGlobe } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 import api from "../api/axios";
+
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { lang, toggleLanguage, t } = useLanguage();
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -54,7 +56,7 @@ function Navbar() {
           <div className="bg-success text-white p-2 rounded-circle d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
             <FaTractor className="fs-5" />
           </div>
-          <span>TRACTO</span>
+          <span>{t("brand")}</span>
         </Link>
 
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -67,12 +69,12 @@ function Navbar() {
               <>
                 <li className="nav-item">
                   <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
-                    Explore Tractors
+                    {t("exploreTractors")}
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
-                    <FaRobot /> AI Advisor
+                    <FaRobot /> {t("aiAdvisor")}
                   </Link>
                 </li>
               </>
@@ -81,14 +83,25 @@ function Navbar() {
             {user && user.role === "customer" && (
               <li className="nav-item">
                 <Link className={`nav-link text-light fw-medium d-flex align-items-center gap-1 ${location.pathname === "/favorites" ? "active text-danger fw-bold" : ""}`} to="/favorites">
-                  <FaHeart className="text-danger" /> Wishlist
+                  <FaHeart className="text-danger" /> {t("wishlist")}
                 </Link>
               </li>
             )}
           </ul>
 
           <div className="d-flex align-items-center gap-3">
+            {/* Global Language Toggle Button */}
+            <button
+              className="btn btn-outline-light btn-sm rounded-pill d-flex align-items-center gap-1.5 px-3 py-1.5 fw-bold border-light-subtle shadow-sm"
+              onClick={toggleLanguage}
+              title="Switch Language / ભાષા બદલો"
+            >
+              <FaGlobe className="text-warning" />
+              <span>{lang === "gu" ? "ગુજરાતી" : "English"}</span>
+            </button>
+
             {!user ? null : (
+
 
               <>
                 {/* Role Badge */}

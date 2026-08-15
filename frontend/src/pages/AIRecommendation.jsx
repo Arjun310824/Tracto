@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useLanguage } from "../context/LanguageContext";
 import api from "../api/axios";
 import { FaRobot, FaTractor, FaGasPump, FaClock, FaCheckCircle, FaSeedling, FaSlidersH, FaRupeeSign, FaStar, FaInfoCircle } from "react-icons/fa";
 
 function AIRecommendation() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+
 
   const [formData, setFormData] = useState({
     crop_type: "cotton",
@@ -87,10 +90,10 @@ function AIRecommendation() {
                 <FaRobot /> Smart AI Engine v2.0
               </span>
               <h1 className="fw-bold display-6 text-white mb-2">
-                AI Agricultural Machinery Matcher
+                {t("aiHeroTitle")}
               </h1>
               <p className="text-light fs-5 mb-0 opacity-90">
-                પાક, જમીન અને જરૂરિયાત મુજબ AI દ્વારા સૌથી શ્રેષ્ઠ ટ્રેક્ટર, ઓજાર અને બળતણનો અંદાજ મેળવો.
+                {t("aiHeroSub")}
               </p>
             </div>
             <div className="col-md-4 text-center mt-3 mt-md-0">
@@ -107,13 +110,13 @@ function AIRecommendation() {
           <div className="col-lg-5">
             <div className="card border-0 shadow-sm rounded-4 p-4 sticky-top" style={{ top: "90px" }}>
               <h5 className="fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
-                <FaSlidersH className="text-success" /> Select Farming Details
+                <FaSlidersH className="text-success" /> {t("selectFarmingDetails")}
               </h5>
 
               <form onSubmit={handleAnalyze}>
                 {/* Crop Selection */}
                 <div className="mb-3">
-                  <label className="form-label fw-semibold small text-secondary">1. Crop Type (પાકની માહિતી)</label>
+                  <label className="form-label fw-semibold small text-secondary">{t("cropType")}</label>
                   <div className="d-flex flex-wrap gap-2">
                     {crops.map((c) => (
                       <button
@@ -135,9 +138,9 @@ function AIRecommendation() {
                 {/* Field Size Slider */}
                 <div className="mb-3">
                   <div className="d-flex justify-content-between align-items-center mb-1">
-                    <label className="form-label fw-semibold small text-secondary">2. Field Size (જમીનનું ક્ષેત્રફળ)</label>
+                    <label className="form-label fw-semibold small text-secondary">{t("fieldSize")}</label>
                     <span className="badge bg-success fs-6 rounded-pill px-3 py-1 fw-bold">
-                      {formData.field_size_acres} Acres (એકર)
+                      {formData.field_size_acres} {t("acres")}
                     </span>
                   </div>
                   <input
@@ -150,15 +153,15 @@ function AIRecommendation() {
                     onChange={(e) => setFormData({ ...formData, field_size_acres: parseFloat(e.target.value) })}
                   />
                   <div className="d-flex justify-content-between text-muted small">
-                    <span>1 Acre</span>
-                    <span>25 Acres</span>
-                    <span>50 Acres</span>
+                    <span>1 {t("acres")}</span>
+                    <span>25 {t("acres")}</span>
+                    <span>50 {t("acres")}</span>
                   </div>
                 </div>
 
                 {/* Soil Type */}
                 <div className="mb-3">
-                  <label className="form-label fw-semibold small text-secondary">3. Soil Type (જમીનનો પ્રકાર)</label>
+                  <label className="form-label fw-semibold small text-secondary">{t("soilType")}</label>
                   <select
                     className="form-select rounded-3 border-secondary-subtle"
                     value={formData.soil_type}
@@ -174,15 +177,15 @@ function AIRecommendation() {
 
                 {/* Task Purpose */}
                 <div className="mb-4">
-                  <label className="form-label fw-semibold small text-secondary">4. Agricultural Task (કામનો પ્રકાર)</label>
+                  <label className="form-label fw-semibold small text-secondary">{t("taskPurpose")}</label>
                   <select
                     className="form-select rounded-3 border-secondary-subtle"
                     value={formData.task_purpose}
                     onChange={(e) => setFormData({ ...formData, task_purpose: e.target.value })}
                   >
-                    {tasks.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.label}
+                    {tasks.map((tItem) => (
+                      <option key={tItem.id} value={tItem.id}>
+                        {tItem.label}
                       </option>
                     ))}
                   </select>
@@ -194,8 +197,9 @@ function AIRecommendation() {
                   disabled={loading}
                   className="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 py-3"
                 >
-                  <FaRobot /> {loading ? "Analyzing..." : "Generate AI Recommendation"}
+                  <FaRobot /> {loading ? t("aiAnalyzing") : t("generateAiBtn")}
                 </button>
+
               </form>
             </div>
           </div>

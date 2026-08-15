@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaLock, FaEnvelope, FaTractor, FaKey, FaEye, FaEyeSlash, FaUserCheck, FaUserTie, FaUserShield, FaRobot, FaCheckCircle, FaStar, FaShieldAlt } from "react-icons/fa";
 import { loginUser } from "../services/authService";
+import { useLanguage } from "../context/LanguageContext";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 
 function Login() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({ email: "", password: "" });
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -124,10 +127,10 @@ function Login() {
                 <FaTractor /> #1 Agricultural Rental Platform
               </span>
               <h1 className="display-6 fw-bold text-white mb-3">
-                Empowering Farmers & Equipment Owners Across Gujarat 🚜
+                {t("heroTitle")}
               </h1>
               <p className="text-light opacity-90 fs-6 mb-4">
-                ખેડૂતો માટે સરળ ટ્રેક્ટર અને ઓજારોનું ભાડું, પારદર્શક ગણતરી અને AI દ્વારા શ્રેષ્ઠ ટ્રેક્ટર સુઝાવ.
+                {t("heroSub")}
               </p>
 
               {/* Key Highlights */}
@@ -137,9 +140,9 @@ function Login() {
                     <FaRobot className="fs-5" />
                   </div>
                   <div>
-                    <h6 className="fw-bold text-white mb-1">Smart AI Matcher Engine</h6>
+                    <h6 className="fw-bold text-white mb-1">{t("aiMatcherHighlight")}</h6>
                     <small className="text-light opacity-80">
-                      પાક અને એકર મુજબ યોગ્ય HP ટ્રેક્ટર, ઓજારો અને ડીઝલનો સચોટ અંદાજ.
+                      {t("aiMatcherSub")}
                     </small>
                   </div>
                 </div>
@@ -149,9 +152,9 @@ function Login() {
                     <FaShieldAlt className="fs-5" />
                   </div>
                   <div>
-                    <h6 className="fw-bold text-white mb-1">Verified Fleet & Secure Bookings</h6>
+                    <h6 className="fw-bold text-white mb-1">{t("verifiedFleetHighlight")}</h6>
                     <small className="text-light opacity-80">
-                      100% ચકાસાયેલા ટ્રેક્ટર માલિકો, સુરક્ષિત પેમેન્ટ્સ અને રિયલ-ટાઈમ સ્ટેટસ.
+                      {t("verifiedFleetSub")}
                     </small>
                   </div>
                 </div>
@@ -185,14 +188,14 @@ function Login() {
               <div className="bg-success text-white p-3 rounded-circle d-inline-flex mb-2 shadow-sm">
                 <FaTractor className="fs-3" />
               </div>
-              <h2 className="fw-bold text-dark m-0">Welcome Back! 👋</h2>
-              <p className="text-muted small mt-1">Sign in to manage your tractor bookings & fleet</p>
+              <h2 className="fw-bold text-dark m-0">{t("welcomeBack")}</h2>
+              <p className="text-muted small mt-1">{t("loginSubtitle")}</p>
             </div>
 
             {/* Quick 1-Click Demo Login Bar */}
             <div className="bg-light p-3 rounded-4 mb-4 border border-secondary-subtle">
               <div className="text-dark small fw-bold mb-2 text-center d-flex align-items-center justify-content-center gap-1">
-                <span>⚡ 1-Click Quick Demo Sign In:</span>
+                <span>{t("quickDemoLogin")}</span>
               </div>
               <div className="d-flex gap-2">
                 <button
@@ -201,7 +204,7 @@ function Login() {
                   style={{ fontSize: "0.78rem" }}
                   onClick={() => handleQuickFill("customer@tracto.com", "customer123")}
                 >
-                  <FaUserCheck /> Farmer
+                  <FaUserCheck /> {t("customer")}
                 </button>
                 <button
                   type="button"
@@ -209,7 +212,7 @@ function Login() {
                   style={{ fontSize: "0.78rem" }}
                   onClick={() => handleQuickFill("owner@tracto.com", "owner123")}
                 >
-                  <FaUserTie /> Owner
+                  <FaUserTie /> {t("owner")}
                 </button>
                 <button
                   type="button"
@@ -217,7 +220,7 @@ function Login() {
                   style={{ fontSize: "0.78rem" }}
                   onClick={() => handleQuickFill("admin@tracto.com", "admin123")}
                 >
-                  <FaUserShield /> Admin
+                  <FaUserShield /> {t("admin")}
                 </button>
               </div>
             </div>
@@ -230,7 +233,7 @@ function Login() {
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label fw-semibold small text-secondary">Email Address</label>
+                <label className="form-label fw-semibold small text-secondary">{t("emailAddress")}</label>
                 <div className="input-group input-group-modern border">
                   <span className="input-group-text bg-white text-success border-0 px-3">
                     <FaEnvelope />
@@ -248,7 +251,7 @@ function Login() {
               </div>
 
               <div className="mb-2">
-                <label className="form-label fw-semibold small text-secondary">Password</label>
+                <label className="form-label fw-semibold small text-secondary">{t("password")}</label>
                 <div className="input-group input-group-modern border">
                   <span className="input-group-text bg-white text-success border-0 px-3">
                     <FaLock />
@@ -284,7 +287,7 @@ function Login() {
                     setForgotErr("");
                   }}
                 >
-                  Forgot Password?
+                  {t("forgotPassword")}
                 </button>
               </div>
 
@@ -300,18 +303,19 @@ function Login() {
                   </>
                 ) : (
                   <>
-                    <FaCheckCircle /> Sign In to Account
+                    <FaCheckCircle /> {t("signInBtn")}
                   </>
                 )}
               </button>
             </form>
 
             <div className="text-center mt-4 pt-3 border-top small text-muted">
-              Don't have an account yet?{" "}
+              {t("noAccount")}{" "}
               <Link to="/register" className="text-success fw-extrabold text-decoration-none">
-                Register Here
+                {t("registerHere")}
               </Link>
             </div>
+
           </div>
         </div>
       </div>
