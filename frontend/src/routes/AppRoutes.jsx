@@ -6,6 +6,8 @@ import Register from "../pages/Register";
 import TractorList from "../pages/TractorList";
 import TractorDetails from "../pages/TractorDetails";
 import BookTractor from "../pages/BookTractor";
+import AIRecommendation from "../pages/AIRecommendation";
+
 
 import CustomerDashboard from "../pages/CustomerDashboard";
 import MyBookings from "../pages/MyBookings";
@@ -71,7 +73,9 @@ function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/tractors" element={<ProtectedRoute><TractorList /></ProtectedRoute>} />
+        <Route path="/ai-advisor" element={<ProtectedRoute><AIRecommendation /></ProtectedRoute>} />
         <Route path="/tractor/:id" element={<ProtectedRoute><TractorDetails /></ProtectedRoute>} />
+
         <Route path="/book-tractor/:id" element={<ProtectedRoute><BookTractor /></ProtectedRoute>} />
 
         {/* Dashboard Smart Redirect */}

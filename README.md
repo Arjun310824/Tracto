@@ -6,7 +6,12 @@
 
 ## ✨ Key Features
 
+### 🤖 Smart AI Machinery Matcher & Dynamic Pricing Engine
+- **AI Crop & Land Compatibility Matcher:** Recommends optimal tractor horsepower, attached implements, estimated operation time (hours), estimated fuel consumption (Liters), and estimated cost based on crop type (Cotton, Wheat, Sugarcane, Paddy, Groundnut), land size (acres), soil condition, and task purpose.
+- **AI Price Advisor for Owners:** Dynamic rental rate suggestions for owners based on machinery HP, model year, and market demand index.
+
 ### 👨‍🌾 For Farmers / Renters
+
 - **Explore Equipment:** Browse and search tractors and agricultural implements with detailed specifications, location filters, and ratings.
 - **Flexible Booking:** Book tractors by hour or day, select required implements, choose delivery options, and calculate estimated costs.
 - **Booking Management:** Track active, pending, completed, or cancelled bookings with live status updates.

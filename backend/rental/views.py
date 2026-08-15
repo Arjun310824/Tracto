@@ -7,7 +7,9 @@ from django.db.models import Q
 from .models import Tractor, TractorImage, Wishlist, Implement
 from .serializers import TractorSerializer, TractorImageSerializer, WishlistSerializer, ImplementSerializer
 from .permissions import IsOwnerOrReadOnly
+from .ai_engine import calculate_ai_machinery_recommendation, calculate_ai_price_advisor
 from bookings.models import Booking
+
 
 
 class ImplementViewSet(viewsets.ModelViewSet):
@@ -193,4 +195,43 @@ class WishlistViewSet(viewsets.ModelViewSet):
             return Response({"message": "Removed from wishlist", "is_favorite": False})
         else:
             Wishlist.objects.create(customer=request.user, tractor=tractor)
-            return Response({"message": "Added to wishlist", "is_favorite": True})
+            return Response({"message": "Added to wishlist", "is_favorite": True})
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+def ai_recommend_machinery_view(request):
+    data = request.data
+    crop_type = data.get("crop_type", "general")
+    field_size_acres = data.get("field_size_acres", 5)
+    soil_type = data.get("soil_type", "medium")
+    task_purpose = data.get("task_purpose", "plowing")
+    district = data.get("district", None)
+
+    result = calculate_ai_machinery_recommendation(
+        crop_type=crop_type,
+        field_size_acres=field_size_acres,
+        soil_type=soil_type,
+        task_purpose=task_purpose,
+        district=district
+    )
+    return Response(result, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+def ai_price_advisor_view(request):
+    data = request.data
+    horsepower = data.get("horsepower", 45)
+    manufacturing_year = data.get("manufacturing_year", 2022)
+    brand = data.get("brand", "Mahindra")
+    district = data.get("district", None)
+
+    result = calculate_ai_price_advisor(
+        horsepower=horsepower,
+        manufacturing_year=manufacturing_year,
+        brand=brand,
+        district=district
+    )
+    return Response(result, status=status.HTTP_200_OK)
+

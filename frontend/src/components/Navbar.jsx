@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle } from "react-icons/fa";
+import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle, FaRobot } from "react-icons/fa";
+
 import api from "../api/axios";
 
 function Navbar() {
@@ -67,6 +68,12 @@ function Navbar() {
                 Explore Tractors
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
+                <FaRobot /> AI Advisor
+              </Link>
+            </li>
+
             {user && user.role === "customer" && (
               <li className="nav-item">
                 <Link className={`nav-link text-light fw-medium d-flex align-items-center gap-1 ${location.pathname === "/favorites" ? "active text-danger fw-bold" : ""}`} to="/favorites">
