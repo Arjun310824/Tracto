@@ -1,6 +1,5 @@
-export className = "translations";
-
 export const translations = {
+
   en: {
     // Navigation
     brand: "TRACTO",
