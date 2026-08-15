@@ -88,11 +88,15 @@ class VerifyPaymentAPIView(views.APIView):
         except (Booking.DoesNotExist, Payment.DoesNotExist):
             return Response({"error": "Payment record not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        payment_method = request.data.get("payment_method", "Razorpay / UPI / Card")
+
         # Record payment verification
         payment.razorpay_payment_id = razorpay_payment_id
         payment.razorpay_signature = razorpay_signature
+        payment.payment_method = payment_method
         payment.status = "success"
         payment.save()
+
 
         booking.status = "paid"
         booking.save()
