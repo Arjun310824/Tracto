@@ -1,0 +1,25 @@
+# Security & Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database & Media Uploads
+db.sqlite3
+db.sqlite3-journal
+media/
+media/*
+
+# Django
+*.log
+local_settings.py
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

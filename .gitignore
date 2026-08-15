@@ -1,0 +1,25 @@
+# Root Git Ignore for TRACTO
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+backend/.env
+backend/db.sqlite3
+backend/db.sqlite3-journal
+backend/media/
+
+# Node / Vite / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+*.env
+*.env.local
+
+# IDE / OS / Logs
+.vscode/
+.idea/
+.DS_Store
+*.log
+Thumbs.db
+
