@@ -65,20 +65,16 @@ function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-2">
-            {user && (
-              <>
-                <li className="nav-item">
-                  <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
-                    {t("exploreTractors")}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
-                    <FaRobot /> {t("aiAdvisor")}
-                  </Link>
-                </li>
-              </>
-            )}
+            <li className="nav-item">
+              <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
+                {t("exploreTractors")}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
+                <FaRobot /> {t("aiAdvisor")}
+              </Link>
+            </li>
 
             {user && user.role === "customer" && (
               <li className="nav-item">
@@ -100,7 +96,17 @@ function Navbar() {
               <span>{lang === "gu" ? "ગુજરાતી" : "English"}</span>
             </button>
 
-            {!user ? null : (
+            {!user ? (
+              <div className="d-flex align-items-center gap-2">
+                <Link to="/login" className="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-bold text-white border-success">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn-tracto-primary btn-sm rounded-pill px-3 py-1.5 fw-bold">
+                  Register
+                </Link>
+              </div>
+            ) : (
+
 
 
               <>

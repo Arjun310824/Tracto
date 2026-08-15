@@ -65,18 +65,20 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Only /login and /register are accessible without authentication */}
+        {/* Public Auth Routes */}
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
 
-        {/* All other routes strictly require authentication; otherwise auto-redirect to /login */}
-        <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
-        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/tractors" element={<ProtectedRoute><TractorList /></ProtectedRoute>} />
-        <Route path="/ai-advisor" element={<ProtectedRoute><AIRecommendation /></ProtectedRoute>} />
-        <Route path="/tractor/:id" element={<ProtectedRoute><TractorDetails /></ProtectedRoute>} />
+        {/* Public Browsing Routes: Anyone can view Home page and Tractor Catalog */}
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/tractors" element={<TractorList />} />
+        <Route path="/ai-advisor" element={<AIRecommendation />} />
+        <Route path="/tractor/:id" element={<TractorDetails />} />
 
+        {/* Protected Actions: Booking or Listing strictly requires login */}
         <Route path="/book-tractor/:id" element={<ProtectedRoute><BookTractor /></ProtectedRoute>} />
+
 
         {/* Dashboard Smart Redirect */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
