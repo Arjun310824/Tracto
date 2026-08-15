@@ -63,16 +63,20 @@ function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-2">
-            <li className="nav-item">
-              <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
-                Explore Tractors
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
-                <FaRobot /> AI Advisor
-              </Link>
-            </li>
+            {user && (
+              <>
+                <li className="nav-item">
+                  <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
+                    Explore Tractors
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
+                    <FaRobot /> AI Advisor
+                  </Link>
+                </li>
+              </>
+            )}
 
             {user && user.role === "customer" && (
               <li className="nav-item">
@@ -84,16 +88,8 @@ function Navbar() {
           </ul>
 
           <div className="d-flex align-items-center gap-3">
-            {!user ? (
-              <>
-                <Link to="/login" className="btn btn-outline-light btn-sm px-3 rounded-pill">
-                  Login
-                </Link>
-                <Link to="/register" className="btn btn-success btn-sm px-3 rounded-pill">
-                  Register
-                </Link>
-              </>
-            ) : (
+            {!user ? null : (
+
               <>
                 {/* Role Badge */}
                 <span className={`badge rounded-pill text-uppercase px-2.5 py-1.5 ${user.role === "owner" ? "bg-warning text-dark" : user.role === "admin" ? "bg-danger" : "bg-success"}`}>
