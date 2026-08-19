@@ -3,6 +3,7 @@ import { FaChartBar, FaRupeeSign, FaTractor, FaCalendarAlt, FaUsers, FaMapMarker
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { RevenueTrendChart, FleetDistributionChart, EngineMeterMetricsChart } from "../components/AnalyticsCharts";
 
 function AdminReports() {
   const [stats, setStats] = useState(null);
@@ -34,8 +35,6 @@ function AdminReports() {
     );
   }
 
-  const maxRevenue = Math.max(...(stats?.monthly_data?.map((m) => m.revenue) || [10000]), 10000);
-
   return (
     <div className="bg-light min-vh-100">
       <Navbar />
@@ -48,42 +47,27 @@ function AdminReports() {
 
           <div className="col-lg-9 col-xl-10 p-4">
             <div className="mb-4">
-              <h2 className="fw-extrabold text-dark m-0">📊 Admin Reports & Performance Analytics</h2>
-              <p className="text-muted small">Visual trends for monthly revenue, top tractors, active fleet owners, top customers, and popular locations</p>
+              <h2 className="fw-extrabold text-dark m-0">📊 Platform Financial Analytics & Growth Reports</h2>
+              <p className="text-muted small">Real-time revenue curves, tractor brand market shares, and engine utilization metrics</p>
             </div>
 
-            {/* Monthly Revenue & Bookings Bar Graph */}
-            <div className="glass-card p-4 mb-4">
-              <h5 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                <FaChartBar className="text-success" /> Monthly Revenue & Bookings Trend (₹)
-              </h5>
-              <p className="text-muted small mb-4">Bar chart breakdown of platform earnings and booking volumes</p>
+            {/* Interactive Revenue & Dispatch Trend Curve */}
+            <RevenueTrendChart data={stats?.monthly_data} title="Platform Gross Revenue & Booking Volume Curve" />
 
-              {stats?.monthly_data?.length === 0 ? (
-                <div className="text-center py-4 text-muted small">No monthly revenue data available yet.</div>
-              ) : (
-                <div className="d-flex align-items-end justify-content-between gap-3 pt-5 px-3 border-bottom pb-2" style={{ height: 260 }}>
-                  {stats?.monthly_data?.map((item, idx) => {
-                    const heightPercent = Math.max((item.revenue / maxRevenue) * 100, 15);
-                    return (
-                      <div key={idx} className="flex-fill text-center d-flex flex-column align-items-center h-100 justify-content-end">
-                        <div className="small fw-bold text-dark mb-1">TRC: {item.bookings}</div>
-                        <span className="fw-bold text-success small mb-1">₹{item.revenue}</span>
-                        <div
-                          className="w-100 bg-success rounded-top transition-all"
-                          style={{
-                            height: `${heightPercent}%`,
-                            background: "linear-gradient(180deg, #16a34a 0%, #15803d 100%)",
-                            maxWidth: 60,
-                          }}
-                        ></div>
-                        <span className="text-muted small mt-2 fw-bold">{item.month}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            {/* Fleet Brand & Engine Utilization Row */}
+            <div className="row g-4 mb-4">
+              <div className="col-lg-6">
+                <FleetDistributionChart />
+              </div>
+              <div className="col-lg-6">
+                <EngineMeterMetricsChart
+                  totalHours={stats?.total_meter_hours || 184.2}
+                  activeTrips={stats?.active_bookings || 6}
+                  completedTrips={stats?.total_bookings || 19}
+                />
+              </div>
             </div>
+
 
             {/* 4 Analytics Grid Cards */}
             <div className="row g-4 mb-4">

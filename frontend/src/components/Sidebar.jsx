@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaTachometerAlt, FaTractor, FaBookmark, FaHeart, FaPlusCircle, FaUsers, FaChartBar, FaUserCheck, FaSignOutAlt, FaBell, FaCreditCard, FaCommentDots, FaRupeeSign } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 
 function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   if (!user) return null;
@@ -19,7 +21,7 @@ function Sidebar() {
     <div className="sidebar-tracto p-3 d-flex flex-column" style={{ minHeight: "calc(100vh - 64px)" }}>
       <div className="px-2 py-3 mb-2 border-bottom">
         <div className="fw-bold text-dark fs-6">{user.first_name ? `${user.first_name} ${user.last_name || ''}` : user.email}</div>
-        <div className="small text-muted text-capitalize">{user.role} Account</div>
+        <div className="small text-muted text-capitalize">{t(user.role) || user.role} Account</div>
       </div>
 
       <nav className="nav flex-column mb-auto">
@@ -27,22 +29,23 @@ function Sidebar() {
         {user.role === "customer" && (
           <>
             <Link to="/customer-dashboard" className={`sidebar-link ${isActive("/customer-dashboard") ? "active" : ""}`}>
-              <FaTachometerAlt /> Dashboard
+              <FaTachometerAlt /> {t("dashboard")}
             </Link>
             <Link to="/my-bookings" className={`sidebar-link ${isActive("/my-bookings") ? "active" : ""}`}>
-              <FaBookmark /> My Bookings
+              <FaBookmark /> {t("myBookings")}
             </Link>
             <Link to="/favorites" className={`sidebar-link ${isActive("/favorites") ? "active" : ""}`}>
-              <FaHeart /> Favorites
+              <FaHeart /> {t("wishlist")}
             </Link>
             <Link to="/notifications" className={`sidebar-link ${isActive("/notifications") ? "active" : ""}`}>
-              <FaBell /> Notifications
+              <FaBell /> {t("notifications") || "Notifications"}
             </Link>
             <Link to="/profile" className={`sidebar-link ${isActive("/profile") ? "active" : ""}`}>
-              <FaUserCheck /> My Profile
+              <FaUserCheck /> {t("myProfile")}
             </Link>
           </>
         )}
+
 
         {/* Owner Menu */}
         {user.role === "owner" && (

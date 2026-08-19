@@ -3,6 +3,8 @@ import { FaRupeeSign, FaUniversity, FaArrowDown, FaCheckCircle, FaPercent, FaHis
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { RevenueTrendChart } from "../components/AnalyticsCharts";
+
 
 function OwnerEarnings() {
   const [data, setData] = useState(null);
@@ -140,8 +142,12 @@ function OwnerEarnings() {
               </div>
             </div>
 
+            {/* Owner Revenue & Dispatch Analytics Chart */}
+            <RevenueTrendChart title="My Tractor Rental Revenue & Dispatch Curve" />
+
             {/* Direct Bank Account Payout Transfer Box */}
             <div className="row g-4 mb-4">
+
               <div className="col-lg-6">
                 <div className="glass-card p-4 h-100">
                   <h5 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">

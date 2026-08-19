@@ -52,8 +52,12 @@ class Tractor(models.Model):
     city_village = models.CharField(max_length=100, blank=True, default="")
     pincode = models.CharField(max_length=10, blank=True, default="")
 
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, default=22.9868)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, default=72.3787)
+
     description = models.TextField(blank=True)
     available = models.BooleanField(default=True)
+
     is_approved_by_admin = models.BooleanField(default=True)
 
     avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)

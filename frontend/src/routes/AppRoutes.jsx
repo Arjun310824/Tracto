@@ -8,7 +8,6 @@ import TractorDetails from "../pages/TractorDetails";
 import BookTractor from "../pages/BookTractor";
 import AIRecommendation from "../pages/AIRecommendation";
 
-
 import CustomerDashboard from "../pages/CustomerDashboard";
 import MyBookings from "../pages/MyBookings";
 import Favorites from "../pages/Favorites";
@@ -22,7 +21,6 @@ import EditTractor from "../pages/EditTractor";
 import OwnerBookings from "../pages/OwnerBookings";
 import OwnerEarnings from "../pages/OwnerEarnings";
 
-
 import AdminDashboard from "../pages/AdminDashboard";
 import AdminUsers from "../pages/AdminUsers";
 import AdminTractors from "../pages/AdminTractors";
@@ -33,28 +31,49 @@ import AdminReports from "../pages/AdminReports";
 
 import InvoiceView from "../pages/InvoiceView";
 
-// Strict Protected Route Wrapper: Redirects any unauthenticated user directly to /login
-function ProtectedRoute({ children }) {
+// Safe Authentication & User Retrieval Helper
+const getAuthUser = () => {
   const token = localStorage.getItem("access_token");
-  const user = localStorage.getItem("user");
-  if (!token || !user) {
+  const userStr = localStorage.getItem("user");
+  if (!token || !userStr || userStr === "null" || userStr === "undefined") {
+    return null;
+  }
+  try {
+    const userObj = JSON.parse(userStr);
+    return userObj && (userObj.id || userObj.email) ? userObj : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// Strict Protected Route Wrapper with Role Authorization Guard
+function ProtectedRoute({ children, allowedRoles = [] }) {
+  const user = getAuthUser();
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  // If specific roles are required and user role is not authorized
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    if (user.role === "owner") return <Navigate to="/owner-dashboard" replace />;
+    if (user.role === "admin") return <Navigate to="/admin-dashboard" replace />;
+    return <Navigate to="/customer-dashboard" replace />;
+  }
+
   return children;
 }
 
-// Redirects logged in users away from /login or /register to their dashboard
+// Redirects already logged in users away from /login or /register to their dashboard
 function PublicOnlyRoute({ children }) {
-  const token = localStorage.getItem("access_token");
-  const user = localStorage.getItem("user");
-  if (token && user) {
+  const user = getAuthUser();
+  if (user) {
     return <Navigate to="/dashboard" replace />;
   }
   return children;
 }
 
 function DashboardRedirect() {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = getAuthUser();
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === "owner") return <Navigate to="/owner-dashboard" replace />;
   if (user.role === "admin") return <Navigate to="/admin-dashboard" replace />;
@@ -65,53 +84,51 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Auth Routes */}
+        {/* Public Authentication Pages */}
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
 
-        {/* Public Browsing Routes: Anyone can view Home page and Tractor Catalog */}
+        {/* Public Browsing Pages: Anyone can view Home and Catalog */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/tractors" element={<TractorList />} />
         <Route path="/ai-advisor" element={<AIRecommendation />} />
         <Route path="/tractor/:id" element={<TractorDetails />} />
 
-        {/* Protected Actions: Booking or Listing strictly requires login */}
-        <Route path="/book-tractor/:id" element={<ProtectedRoute><BookTractor /></ProtectedRoute>} />
+        {/* Protected Booking: Strictly requires Login (Farmers or Admins) */}
+        <Route path="/book-tractor/:id" element={<ProtectedRoute allowedRoles={["customer", "admin"]}><BookTractor /></ProtectedRoute>} />
 
-
-        {/* Dashboard Smart Redirect */}
+        {/* Dashboard Smart Role Redirect */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
 
-        {/* Customer Dashboard Pages */}
-        <Route path="/customer-dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
-        <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
-        <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+        {/* Customer / Farmer Protected Pages */}
+        <Route path="/customer-dashboard" element={<ProtectedRoute allowedRoles={["customer", "admin"]}><CustomerDashboard /></ProtectedRoute>} />
+        <Route path="/my-bookings" element={<ProtectedRoute allowedRoles={["customer", "admin"]}><MyBookings /></ProtectedRoute>} />
+        <Route path="/favorites" element={<ProtectedRoute allowedRoles={["customer", "admin"]}><Favorites /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
-        {/* Owner Dashboard Pages */}
-        <Route path="/owner-dashboard" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
-        <Route path="/my-tractors" element={<ProtectedRoute><MyTractors /></ProtectedRoute>} />
-        <Route path="/add-tractor" element={<ProtectedRoute><AddTractor /></ProtectedRoute>} />
-        <Route path="/edit-tractor/:id" element={<ProtectedRoute><EditTractor /></ProtectedRoute>} />
-        <Route path="/owner-bookings" element={<ProtectedRoute><OwnerBookings /></ProtectedRoute>} />
-        <Route path="/owner-earnings" element={<ProtectedRoute><OwnerEarnings /></ProtectedRoute>} />
+        {/* Owner Protected Pages (Strictly blocked for normal customers) */}
+        <Route path="/owner-dashboard" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><OwnerDashboard /></ProtectedRoute>} />
+        <Route path="/my-tractors" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><MyTractors /></ProtectedRoute>} />
+        <Route path="/add-tractor" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><AddTractor /></ProtectedRoute>} />
+        <Route path="/edit-tractor/:id" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><EditTractor /></ProtectedRoute>} />
+        <Route path="/owner-bookings" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><OwnerBookings /></ProtectedRoute>} />
+        <Route path="/owner-earnings" element={<ProtectedRoute allowedRoles={["owner", "admin"]}><OwnerEarnings /></ProtectedRoute>} />
 
+        {/* Admin Protected Pages (Strictly blocked for all non-admins) */}
+        <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin-users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
+        <Route path="/admin-tractors" element={<ProtectedRoute allowedRoles={["admin"]}><AdminTractors /></ProtectedRoute>} />
+        <Route path="/admin-bookings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminBookings /></ProtectedRoute>} />
+        <Route path="/admin-payments" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPayments /></ProtectedRoute>} />
+        <Route path="/admin-reviews" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReviews /></ProtectedRoute>} />
+        <Route path="/admin-reports" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>} />
 
-        {/* Admin Dashboard Pages */}
-        <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/admin-users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-        <Route path="/admin-tractors" element={<ProtectedRoute><AdminTractors /></ProtectedRoute>} />
-        <Route path="/admin-bookings" element={<ProtectedRoute><AdminBookings /></ProtectedRoute>} />
-        <Route path="/admin-payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
-        <Route path="/admin-reviews" element={<ProtectedRoute><AdminReviews /></ProtectedRoute>} />
-        <Route path="/admin-reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
-
-        {/* Invoice */}
+        {/* Invoice (Protected) */}
         <Route path="/invoice/:bookingId" element={<ProtectedRoute><InvoiceView /></ProtectedRoute>} />
 
-        {/* Catch-all fallback redirects to /login */}
+        {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

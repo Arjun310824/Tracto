@@ -4,6 +4,8 @@ import { FaUsers, FaUserCheck, FaTractor, FaBookmark, FaRupeeSign, FaChartBar, F
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { RevenueTrendChart } from "../components/AnalyticsCharts";
+
 
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -126,8 +128,12 @@ function AdminDashboard() {
               </div>
             </div>
 
+            {/* Interactive Revenue & Growth Graph */}
+            <RevenueTrendChart data={stats?.monthly_data} title="Monthly Platform Revenue & Tractor Booking Velocity" />
+
             {/* Quick Tables Grid */}
             <div className="row g-4 mb-4">
+
               {/* Top Rented Tractors */}
               <div className="col-lg-6">
                 <div className="glass-card p-4">

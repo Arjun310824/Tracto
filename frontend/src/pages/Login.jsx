@@ -29,13 +29,8 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleQuickFill = (email, password) => {
-    setFormData({ email, password });
-    setMessage("");
-    setIsError(false);
-  };
-
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
     setMessage("");
@@ -121,40 +116,40 @@ function Login() {
       <div className="container my-auto py-4">
         <div className="row g-0 justify-content-center align-items-stretch shadow-lg rounded-5 overflow-hidden border border-white">
           {/* Left Column: Visual Hero Section */}
-          <div className="col-lg-6 login-hero-card p-4 p-md-5 d-none d-lg-flex flex-column justify-content-between position-relative z-1">
+          <div className="col-lg-6 login-hero-card p-4 p-md-5 d-none d-lg-flex flex-column justify-content-between position-relative z-1" style={{ background: "linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%)" }}>
             <div>
-              <span className="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold mb-4 d-inline-flex align-items-center gap-2">
-                <FaTractor /> #1 Agricultural Rental Platform
-              </span>
-              <h1 className="display-6 fw-bold text-white mb-3">
+              <div className="d-inline-flex align-items-center gap-2 bg-white bg-opacity-20 text-white px-3 py-1.5 rounded-pill fw-bold small mb-4 backdrop-blur border border-white border-opacity-25 shadow-sm">
+                <FaTractor className="text-warning" /> #1 Agricultural Equipment Network
+              </div>
+              <h1 className="display-6 fw-extrabold text-white mb-3 lh-sm">
                 {t("heroTitle")}
               </h1>
-              <p className="text-light opacity-90 fs-6 mb-4">
+              <p className="text-light opacity-90 fs-6 mb-4 leading-relaxed">
                 {t("heroSub")}
               </p>
 
               {/* Key Highlights */}
               <div className="d-flex flex-column gap-3 mb-4">
-                <div className="d-flex align-items-start gap-3 bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur">
-                  <div className="bg-success p-2 rounded-circle text-white mt-1">
-                    <FaRobot className="fs-5" />
-                  </div>
-                  <div>
-                    <h6 className="fw-bold text-white mb-1">{t("aiMatcherHighlight")}</h6>
-                    <small className="text-light opacity-80">
-                      {t("aiMatcherSub")}
-                    </small>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-start gap-3 bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur">
-                  <div className="bg-warning text-dark p-2 rounded-circle mt-1">
+                <div className="d-flex align-items-start gap-3 bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-10 shadow-sm">
+                  <div className="bg-warning text-dark p-2.5 rounded-circle mt-0.5 shadow-sm">
                     <FaShieldAlt className="fs-5" />
                   </div>
                   <div>
                     <h6 className="fw-bold text-white mb-1">{t("verifiedFleetHighlight")}</h6>
-                    <small className="text-light opacity-80">
+                    <small className="text-light opacity-80 leading-normal d-block">
                       {t("verifiedFleetSub")}
+                    </small>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-start gap-3 bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-10 shadow-sm">
+                  <div className="bg-success text-white p-2.5 rounded-circle mt-0.5 shadow-sm border border-white border-opacity-25">
+                    <FaRobot className="fs-5" />
+                  </div>
+                  <div>
+                    <h6 className="fw-bold text-white mb-1">{t("aiMatcherHighlight")}</h6>
+                    <small className="text-light opacity-80 leading-normal d-block">
+                      {t("aiMatcherSub")}
                     </small>
                   </div>
                 </div>
@@ -183,53 +178,22 @@ function Login() {
           </div>
 
           {/* Right Column: Glassmorphism Login Form */}
-          <div className="col-lg-6 login-glass-box p-4 p-md-5 d-flex flex-column justify-content-center">
+          <div className="col-lg-6 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
             <div className="text-center mb-4">
-              <div className="bg-success text-white p-3 rounded-circle d-inline-flex mb-2 shadow-sm">
+              <div className="bg-success-subtle text-success p-3 rounded-circle d-inline-flex mb-2 shadow-sm border border-success-subtle">
                 <FaTractor className="fs-3" />
               </div>
-              <h2 className="fw-bold text-dark m-0">{t("welcomeBack")}</h2>
+              <h2 className="fw-extrabold text-dark m-0">{t("welcomeBack")}</h2>
               <p className="text-muted small mt-1">{t("loginSubtitle")}</p>
             </div>
 
-            {/* Quick 1-Click Demo Login Bar */}
-            <div className="bg-light p-3 rounded-4 mb-4 border border-secondary-subtle">
-              <div className="text-dark small fw-bold mb-2 text-center d-flex align-items-center justify-content-center gap-1">
-                <span>{t("quickDemoLogin")}</span>
-              </div>
-              <div className="d-flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-outline-success btn-sm flex-fill rounded-pill demo-role-btn d-flex align-items-center justify-content-center gap-1 py-1.5 fw-bold"
-                  style={{ fontSize: "0.78rem" }}
-                  onClick={() => handleQuickFill("customer@tracto.com", "customer123")}
-                >
-                  <FaUserCheck /> {t("customer")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm flex-fill rounded-pill demo-role-btn d-flex align-items-center justify-content-center gap-1 py-1.5 fw-bold"
-                  style={{ fontSize: "0.78rem" }}
-                  onClick={() => handleQuickFill("owner@tracto.com", "owner123")}
-                >
-                  <FaUserTie /> {t("owner")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-dark btn-sm flex-fill rounded-pill demo-role-btn d-flex align-items-center justify-content-center gap-1 py-1.5 fw-bold"
-                  style={{ fontSize: "0.78rem" }}
-                  onClick={() => handleQuickFill("admin@tracto.com", "admin123")}
-                >
-                  <FaUserShield /> {t("admin")}
-                </button>
-              </div>
-            </div>
 
             {message && (
               <div className={`alert ${isError ? "alert-danger" : "alert-success"} p-3 small text-center mb-4 rounded-4 shadow-sm`}>
                 {message}
               </div>
             )}
+
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">

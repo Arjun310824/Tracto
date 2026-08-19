@@ -4,9 +4,12 @@ import { FaFilter, FaSearch, FaRedo, FaTractor } from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import TractorCard from "../components/TractorCard";
+import { useLanguage } from "../context/LanguageContext";
 
 function TractorList() {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
+
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [brand, setBrand] = useState(searchParams.get("brand") || "");
@@ -81,11 +84,11 @@ function TractorList() {
         {/* Header Title */}
         <div className="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
-            <h2 className="fw-extrabold text-dark m-0">Explore & Search Tractors</h2>
+            <h2 className="fw-extrabold text-dark m-0">{t("exploreTitle")}</h2>
             <p className="text-muted small m-0">Find top performance farming tractors by brand, price, horsepower, and location</p>
           </div>
           <span className="badge bg-success-subtle text-success fs-6 border border-success-subtle px-3 py-2">
-            {tractors.length} Tractors Found
+            {tractors.length} {t("available")}
           </span>
         </div>
 
@@ -95,7 +98,7 @@ function TractorList() {
             <div className="filter-box shadow-sm">
               <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                 <h5 className="fw-bold m-0 d-flex align-items-center gap-2">
-                  <FaFilter className="text-success fs-6" /> Tractor Filters
+                  <FaFilter className="text-success fs-6" /> {t("filterByBrand")}
                 </h5>
                 <button className="btn btn-link text-decoration-none p-0 text-muted small d-flex align-items-center gap-1" onClick={handleReset}>
                   <FaRedo /> Reset
@@ -113,12 +116,13 @@ function TractorList() {
                     <input
                       type="text"
                       className="form-control border-start-0 ps-0"
-                      placeholder="e.g. Mahindra 575"
+                      placeholder={t("searchPlaceholder")}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                     />
                   </div>
                 </div>
+
 
                 {/* Location / District */}
                 <div className="mb-3">

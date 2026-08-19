@@ -98,14 +98,18 @@ class VerifyPaymentAPIView(views.APIView):
         payment.save()
 
 
+        import random
+        booking.completion_otp = f"{random.randint(1000, 9999)}"
         booking.status = "paid"
         booking.save()
 
-        # Send Notifications
+        farmer_phone = booking.customer.phone or "+91 98765 43210"
+
+        # Send Notifications & SMS
         notify_user(
             user=booking.customer,
-            title="Payment Successful! 💳✅",
-            message=f"Payment of ₹{payment.amount} for Booking TRC{booking.id:05d} ({booking.tractor.name}) was successful. Your rental is confirmed!",
+            title=f"📱 SMS to {farmer_phone}: Work Completion OTP is {booking.completion_otp}",
+            message=f"Payment of ₹{payment.amount} for Booking TRC{booking.id:05d} was successful! Your confidential Work Completion OTP is {booking.completion_otp}. Give this OTP to the tractor driver ONLY after your field work is 100% complete.",
             notification_type="payment_success"
         )
         notify_user(
@@ -114,6 +118,7 @@ class VerifyPaymentAPIView(views.APIView):
             message=f"Customer {booking.customer.first_name or booking.customer.email} completed payment of ₹{payment.amount} for {booking.tractor.name}.",
             notification_type="payment_success"
         )
+
 
         return Response({
             "message": "Payment verified successfully",

@@ -42,6 +42,27 @@ class Booking(models.Model):
         default="daily"
     )
     rental_units = models.PositiveIntegerField(default=1)
+    WORK_TYPE_CHOICES = [
+
+        ("plowing", "🌾 Land Plowing / Tillage (જમીન ખેડવા / ખેડાણ)"),
+        ("transport", "🚛 Crop Transport / Trolley Haulage (પાક માલવહન / ટ્રોલી)"),
+        ("rotavator", "🔄 Fine Soil Bed Prep (રોટાવેટર / માટી ભભરાવવી)"),
+        ("sowing", "🌱 Sowing / Seeding (વાવણી / ઓરણી)"),
+        ("harvesting", "🚜 Threshing / Harvesting (કાપણી / થ્રેશર)"),
+        ("leveling", "📐 Land Leveling (જમીન સમથળ / લેવલિંગ)"),
+        ("spraying", "💧 Pesticide Spraying (દવા છંટકાવ)"),
+        ("general", "⚙️ General Agricultural Work (સામાન્ય ખેતીકામ)"),
+    ]
+
+    farming_work_type = models.CharField(
+        max_length=50,
+        choices=WORK_TYPE_CHOICES,
+        default="plowing",
+        blank=True
+    )
+    crop_name = models.CharField(max_length=100, blank=True, default="Cotton (કપાસ)")
+    land_area_size = models.DecimalField(max_digits=6, decimal_places=2, default=5.0)
+    land_area_unit = models.CharField(max_length=20, default="bigha")
 
     purpose = models.CharField(max_length=255, blank=True, default="")
     notes = models.TextField(blank=True, default="")
@@ -51,6 +72,7 @@ class Booking(models.Model):
         decimal_places=2,
         default=0
     )
+
 
     STATUS_CHOICES = [
         ("pending", "Request Sent"),
@@ -82,7 +104,14 @@ class Booking(models.Model):
     start_meter_hours = models.DecimalField(max_digits=8, decimal_places=1, default=0.0, null=True, blank=True)
     end_meter_hours = models.DecimalField(max_digits=8, decimal_places=1, default=0.0, null=True, blank=True)
 
+    driver_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    driver_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
+    completion_otp = models.CharField(max_length=6, default="4892", blank=True)
+
+
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 
     def __str__(self):

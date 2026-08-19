@@ -1,7 +1,6 @@
 export const translations = {
-
   en: {
-    // Navigation
+    // Navigation & General
     brand: "TRACTO",
     exploreTractors: "Explore Tractors",
     aiAdvisor: "AI Advisor",
@@ -14,28 +13,45 @@ export const translations = {
     register: "Register",
     logout: "Logout",
     myProfile: "My Profile",
+    serviceLogs: "Fleet Service Logs",
+    breakdownSupport: "Emergency Breakdown SOS",
 
     // Roles
     customer: "Farmer",
     owner: "Owner",
     admin: "Admin",
 
+    // Home & Hero
+    heroHeading: "Modern Tractor & Agricultural Machinery Rental Platform",
+    heroSubheading: "Rent verified high-performance tractors, rotavators, and implements with transparent pricing and real-time GPS tracking.",
+    findTractorsNow: "Find Tractors Now",
+    instantAiAdvisor: "Try AI Machinery Matcher",
+    featuredFleet: "Featured Agricultural Machinery",
+    howItWorks: "How TRACTO Works in 4 Simple Steps",
+    step1Title: "1. Search & Select Machinery",
+    step1Desc: "Filter tractors by HP, brand, attached implements, and nearby district.",
+    step2Title: "2. Owner Dispatches with GPS",
+    step2Desc: "Owner accepts your rental and driver delivers to your farm location.",
+    step3Title: "3. Confirm Payment",
+    step3Desc: "Pay securely via online UPI/Cards or Cash directly on the farm.",
+    step4Title: "4. Verify Work Completion OTP",
+    step4Desc: "Give your 4-digit SMS OTP to the driver only when farm work is 100% finished.",
+
     // Login Page
-    welcomeBack: "Welcome Back! 👋",
-    loginSubtitle: "Sign in to manage your tractor bookings & fleet",
+    heroTitle: "Empowering Farmers & Tractor Owners Across Gujarat 🚜",
+    heroSub: "Fast, affordable, and flexible farming equipment rentals with live GPS tracking and verified owners.",
+    aiMatcherHighlight: "Smart AI Machinery Matcher",
+    aiMatcherSub: "Calculates target HP, implements, and fuel estimate for your crop & acres.",
+    verifiedFleetHighlight: "Verified Fleet & Safe OTP Completion",
+    verifiedFleetSub: "100% inspected tractors, transparent hourly rates, and safe 4-digit OTP handover.",
+    welcomeBack: "Sign In to TRACTO",
+    loginSubtitle: "Sign in to manage your tractor rentals & fleet operations",
     emailAddress: "Email Address",
     password: "Password",
     forgotPassword: "Forgot Password?",
-    quickDemoLogin: "⚡ 1-Click Quick Demo Sign In:",
     signInBtn: "Sign In to Account",
     noAccount: "Don't have an account yet?",
     registerHere: "Register Here",
-    heroTitle: "Empowering Farmers & Equipment Owners Across Gujarat 🚜",
-    heroSub: "Easy machinery rentals for farmers, transparent rates, and smart AI recommendations.",
-    aiMatcherHighlight: "Smart AI Matcher Engine",
-    aiMatcherSub: "Calculates target HP, implements, and fuel estimate for your crop & acres.",
-    verifiedFleetHighlight: "Verified Fleet & Secure Bookings",
-    verifiedFleetSub: "100% verified owners, safe payments, and live status updates.",
 
     // Register Page
     createAccount: "Create TRACTO Account",
@@ -45,10 +61,8 @@ export const translations = {
     accountRole: "Account Role",
     customerRoleOpt: "👨‍🌾 Farmer (Rent Tractors)",
     ownerRoleOpt: "🚜 Owner (List & Rent Out Tractors)",
-    alreadyAccount: "Already have an account?",
-    loginHere: "Login Here",
 
-    // AI Advisor Page
+    // AI Advisor
     aiHeroTitle: "AI Agricultural Machinery Matcher",
     aiHeroSub: "Get optimal tractor recommendations, fuel estimates, and costs based on your crop and field size.",
     selectFarmingDetails: "Select Farming Details",
@@ -60,7 +74,7 @@ export const translations = {
     aiAnalyzing: "Analyzing with AI...",
     acres: "Acres",
 
-    // Tractor List & Booking
+    // Tractor Listing & Details
     exploreTitle: "Explore Agricultural Machinery & Tractors",
     filterByBrand: "Filter by Brand",
     searchPlaceholder: "Search by brand, model, location...",
@@ -75,12 +89,27 @@ export const translations = {
     available: "Available",
     booked: "Booked",
 
-    // Footer & Miscellaneous
+    // Booking & Real-World Calculations
+    landSizeCalcTitle: "Farm Land Size & Smart Plowing Calculator",
+    landUnit: "Unit",
+    bigha: "Bigha (વીઘા)",
+    acre: "Acre (એકર)",
+    guntha: "Guntha (ગૂંઠા)",
+    estTime: "Est. Time",
+    estDiesel: "Est. Diesel",
+    estCost: "Est. Fuel Cost",
+    gpsRoute: "Live GPS Route",
+    callOwner: "Call Owner",
+    callDriver: "Call Driver",
+    otpBadge: "Work Completion OTP",
+    smsDelivered: "SMS Sent to Phone",
+    resendOtp: "Resend SMS OTP",
+
     langName: "English",
   },
 
   gu: {
-    // Navigation
+    // Navigation & General
     brand: "ટ્રેક્ટો",
     exploreTractors: "ટ્રેક્ટર શોધો",
     aiAdvisor: "AI એડવાઈઝર",
@@ -93,28 +122,45 @@ export const translations = {
     register: "રજીસ્ટર",
     logout: "લોગઆઉટ",
     myProfile: "મારી પ્રોફાઈલ",
+    serviceLogs: "ટ્રેક્ટર સર્વિસ લોગ",
+    breakdownSupport: "બ્રેકડાઉન હેલ્પલાઈન SOS",
 
     // Roles
     customer: "ખેડૂત",
     owner: "માલિક",
     admin: "એડમિન",
 
+    // Home & Hero
+    heroHeading: "ગુજરાતનું અગ્રણી ટ્રેક્ટર અને કૃષિ સાધન ભાડે આપતું પ્લેટફોર્મ",
+    heroSubheading: "ખેતી માટે ચકાસાયેલ પાવરફુલ ટ્રેક્ટરો, રોટાવેટર અને ઓજારો લાઈવ GPS ટ્રેકિંગ અને વ્યાજબી ભાવે ભાડે મેળવો.",
+    findTractorsNow: "ટ્રેક્ટર શોધો",
+    instantAiAdvisor: "AI મશીનરી મેચર અજમાવો",
+    featuredFleet: "શ્રેષ્ઠ કૃષિ ટ્રેક્ટરો અને મશીનરી",
+    howItWorks: "ટ્રેક્ટો ૪ સરળ સ્ટેપ્સમાં કેવી રીતે કામ કરે છે",
+    step1Title: "૧. ટ્રેક્ટર અને ઓજાર પસંદ કરો",
+    step1Desc: "તમારા પાક, હોર્સપાવર અને નજીકના જિલ્લા મુજબ ટ્રેક્ટર પસંદ કરો.",
+    step2Title: "૨. ઓનર ખેતરે ટ્રેક્ટર મોકલશે",
+    step2Desc: "ઓનર બુકિંગ સ્વીકારશે અને ડ્રાઈવર લાઈવ GPS સાથે તમારા ખેતરે પહોંચશે.",
+    step3Title: "૩. પેમેન્ટ કન્ફર્મ કરો",
+    step3Desc: "ઓનલાઈન UPI અથવા ખેતરમાં રોકડ (Cash) દ્વારા સુરક્ષિત ચુકવણી કરો.",
+    step4Title: "૪. ખેતરનું કામ પૂરું થાય ત્યારે જ OTP આપો",
+    step4Desc: "ખેતરમાં ૧૦૦% કામ પૂરું થાય ત્યારે જ તમારા ફોન પર આવેલો ૪-અંકનો SMS OTP ડ્રાઈવરને આપો.",
+
     // Login Page
-    welcomeBack: "સ્વાગત છે! 👋",
+    heroTitle: "ગુજરાતના ખેડૂતો અને ટ્રેક્ટર માલિકો માટે સશક્ત પ્લેટફોર્મ 🚜",
+    heroSub: "ખેડૂતો માટે સરળ સાધન ભાડું, પારદર્શક કિંમત, લાઈવ GPS ટ્રેકિંગ અને વિશ્વસનીય સેવા.",
+    aiMatcherHighlight: "સ્માર્ટ AI મશીનરી મેચર",
+    aiMatcherSub: "પાક અને એકર મુજબ યોગ્ય HP ટ્રેક્ટર, ઓજારો અને ડીઝલનો સાચો અંદાજ.",
+    verifiedFleetHighlight: "ચકાસાયેલ ટ્રેક્ટરો અને સુરક્ષિત OTP સિસ્ટમ",
+    verifiedFleetSub: "100% ચકાસાયેલા માલિકો, પારદર્શક દરો અને કામ પૂરું થવા પર જ OTP વેરિફિકેશન.",
+    welcomeBack: "ટ્રેક્ટો એકાઉન્ટમાં લોગિન કરો",
     loginSubtitle: "તમારા બુકિંગ અને ટ્રેક્ટર લિસ્ટિંગ માટે સાઈન ઈન કરો",
     emailAddress: "ઈમેઈલ સરનામું",
     password: "પાસવર્ડ",
     forgotPassword: "પાસવર્ડ ભૂલી ગયા?",
-    quickDemoLogin: "⚡ 1-ક્લિક ડેમો સાઈન ઈન:",
     signInBtn: "સાઈન ઈન કરો",
     noAccount: "એકાઉન્ટ નથી?",
     registerHere: "અહીં રજીસ્ટર કરો",
-    heroTitle: "ગુજરાતના ખેડૂતો અને ટ્રેક્ટર માલિકો માટે સશક્ત પ્લેટફોર્મ 🚜",
-    heroSub: "ખેડૂતો માટે સરળ સાધન ભાડું, પારદર્શક કિંમત અને AI દ્વારા શ્રેષ્ઠ સુઝાવ.",
-    aiMatcherHighlight: "સ્માર્ટ AI મેચર એન્જિન",
-    aiMatcherSub: "પાક અને એકર મુજબ યોગ્ય HP ટ્રેક્ટર, ઓજારો અને ડીઝલનો અંદાજ.",
-    verifiedFleetHighlight: "ચકાસાયેલ ટ્રેક્ટરો અને સુરક્ષિત બુકિંગ",
-    verifiedFleetSub: "100% ચકાસાયેલા માલિકો અને સલામત પેમેન્ટ સિસ્ટમ.",
 
     // Register Page
     createAccount: "ટ્રેક્ટો એકાઉન્ટ બનાવો",
@@ -124,10 +170,8 @@ export const translations = {
     accountRole: "એકાઉન્ટનો પ્રકાર",
     customerRoleOpt: "👨‍🌾 ખેડૂત (ટ્રેક્ટર ભાડે લેવા)",
     ownerRoleOpt: "🚜 માલિક (ટ્રેક્ટર ભાડે આપવા)",
-    alreadyAccount: "પહેલેથી એકાઉન્ટ છે?",
-    loginHere: "અહીં લોગિન કરો",
 
-    // AI Advisor Page
+    // AI Advisor
     aiHeroTitle: "AI ખેતીવાડી મશીનરી મેચર",
     aiHeroSub: "પાક, જમીન અને જરૂરિયાત મુજબ AI દ્વારા સૌથી શ્રેષ્ઠ ટ્રેક્ટર, ઓજાર અને બળતણનો અંદાજ મેળવો.",
     selectFarmingDetails: "ખેતીની વિગતો પસંદ કરો",
@@ -139,7 +183,7 @@ export const translations = {
     aiAnalyzing: "AI વિશ્લેષણ કરી રહ્યું છે...",
     acres: "એકર",
 
-    // Tractor List & Booking
+    // Tractor Listing & Details
     exploreTitle: "ખેતીવાડી ટ્રેક્ટરો અને સાધનો શોધો",
     filterByBrand: "બ્રાન્ડ મુજબ ફિલ્ટર કરો",
     searchPlaceholder: "બ્રાન્ડ, મોડલ અથવા ગામ/શહેર શોધો...",
@@ -154,7 +198,131 @@ export const translations = {
     available: "ઉપલબ્ધ",
     booked: "બુક થયેલ",
 
-    // Footer & Miscellaneous
+    // Booking & Real-World Calculations
+    landSizeCalcTitle: "ખેતરનું માપ અને સ્માર્ટ ખેડાણ કેલ્ક્યુલેટર",
+    landUnit: "એકમ",
+    bigha: "વીઘા (Bigha)",
+    acre: "એકર (Acre)",
+    guntha: "ગૂંઠા (Guntha)",
+    estTime: "અંદાજિત સમય",
+    estDiesel: "જરૂરી ડીઝલ",
+    estCost: "બળતણ ખર્ચ",
+    gpsRoute: "લાઈવ GPS રસ્તો",
+    callOwner: "માલિકને ફોન કરો",
+    callDriver: "ડ્રાઈવરને ફોન કરો",
+    otpBadge: "કામ પૂરું કરવાનો OTP",
+    smsDelivered: "મોબાઈલ પર SMS મોકલાયો",
+    resendOtp: "ફરીથી SMS OTP મંગાવો",
+
     langName: "ગુજરાતી",
+  },
+
+  hi: {
+    // Navigation & General
+    brand: "ट्रैक्टो",
+    exploreTractors: "ट्रैक्टर खोजें",
+    aiAdvisor: "AI सलाहकार",
+    wishlist: "पसंदीदा सूची",
+    dashboard: "डैशबोर्ड",
+    myBookings: "मेरी बुकिंग",
+    myTractors: "मेरे ट्रैक्टर",
+    addTractor: "ट्रैक्टर जोड़ें",
+    login: "लॉग इन",
+    register: "पंजीकरण",
+    logout: "लॉग आउट",
+    myProfile: "मेरी प्रोफ़ाइल",
+    serviceLogs: "ट्रैक्टर सर्विस लॉग",
+    breakdownSupport: "आपातकालीन ब्रेकडाउन SOS",
+
+    // Roles
+    customer: "किसान",
+    owner: "मालिक",
+    admin: "एडमिन",
+
+    // Home & Hero
+    heroHeading: "आधुनिक ट्रैक्टर एवं कृषि उपकरण किराया मंच",
+    heroSubheading: "सत्यापित शक्तिशाली ट्रैक्टर, रोटावेटर और उपकरण लाइव जीपीएस ट्रैकिंग और पारदर्शी दरों पर किराए पर लें।",
+    findTractorsNow: "ट्रैक्टर खोजें",
+    instantAiAdvisor: "AI उपकरण मैचर आज़माएं",
+    featuredFleet: "प्रमुख कृषि ट्रैक्टर एवं मशीनरी",
+    howItWorks: "ट्रैक्टो 4 आसान चरणों में कैसे काम करता है",
+    step1Title: "1. ट्रैक्टर और उपकरण चुनें",
+    step1Desc: "फसल, हॉर्सपावर और नजदीकी जिले के अनुसार ट्रैक्टर चुनें।",
+    step2Title: "2. मालिक जीपीएस के साथ भेजेगा",
+    step2Desc: "मालिक बुकिंग स्वीकार करेगा और ड्राइवर लाइव जीपीएस के साथ आपके खेत पर पहुंचेगा।",
+    step3Title: "3. भुगतान की पुष्टि करें",
+    step3Desc: "ऑनलाइन यूपीआई या खेत पर नकद (Cash) द्वारा सुरक्षित भुगतान करें।",
+    step4Title: "4. काम पूरा होने पर ही ओटीपी दें",
+    step4Desc: "खेत में 100% काम पूरा होने पर ही अपने फोन पर आया 4-अंकीय एसएमएस ओटीपी ड्राइवर को दें।",
+
+    // Login Page
+    heroTitle: "किसानों और ट्रैक्टर मालिकों के लिए सशक्त मंच 🚜",
+    heroSub: "किसानों के लिए आसान मशीनरी किराया, पारदर्शी दरें, लाइव जीपीएस और सुरक्षित सेवा।",
+    aiMatcherHighlight: "स्मार्ट AI मशीनरी मैचर",
+    aiMatcherSub: "फसल और एकड़ के अनुसार उपयुक्त HP ट्रैक्टर, औजार और ईंधन का सटीक अनुमान।",
+    verifiedFleetHighlight: "सत्यापित बेड़ा और सुरक्षित ओटीपी प्रणाली",
+    verifiedFleetSub: "100% सत्यापित मालिक, पारदर्शी दरें और काम पूरा होने पर ही ओटीपी हैंडओवर।",
+    welcomeBack: "ट्रैक्टो खाते में लॉगिन करें",
+    loginSubtitle: "अपनी बुकिंग और ट्रैक्टर बेड़े का प्रबंधन करें",
+    emailAddress: "ईमेल पता",
+    password: "पासवर्ड",
+    forgotPassword: "पासवर्ड भूल गए?",
+    signInBtn: "खाते में साइन इन करें",
+    noAccount: "अभी तक खाता नहीं है?",
+    registerHere: "यहाँ पंजीकरण करें",
+
+    // Register Page
+    createAccount: "ट्रैक्टो खाता बनाएं",
+    firstName: "पहला नाम",
+    lastName: "उपनाम / अंतिम नाम",
+    phone: "मोबाइल नंबर",
+    accountRole: "खाते का प्रकार",
+    customerRoleOpt: "👨‍🌾 किसान (ट्रैक्टर किराए पर लें)",
+    ownerRoleOpt: "🚜 मालिक (ट्रैक्टर किराए पर दें)",
+
+    // AI Advisor
+    aiHeroTitle: "AI कृषि मशीनरी मैचर",
+    aiHeroSub: "फसल और भूमि के आकार के आधार पर सर्वोत्तम ट्रैक्टर और औजारों की सिफारिशें प्राप्त करें।",
+    selectFarmingDetails: "खेती का विवरण चुनें",
+    cropType: "1. फसल का प्रकार",
+    fieldSize: "2. खेत का आकार",
+    soilType: "3. मिट्टी का प्रकार",
+    taskPurpose: "4. कृषि कार्य",
+    generateAiBtn: "AI सिफारिश प्राप्त करें",
+    aiAnalyzing: "AI विश्लेषण कर रहा है...",
+    acres: "एकड़",
+
+    // Tractor Listing & Details
+    exploreTitle: "कृषि मशीनरी और ट्रैक्टर खोजें",
+    filterByBrand: "ब्रांड के अनुसार फ़िल्टर करें",
+    searchPlaceholder: "ब्रांड, मॉडल या स्थान खोजें...",
+    allBrands: "सभी ब्रांड",
+    rentPerHour: "प्रति घंटा",
+    rentPerDay: "प्रति दिन",
+    hp: "HP अश्वशक्ति",
+    bookNow: "अभी बुक करें",
+    details: "विवरण देखें",
+    location: "स्थान",
+    rating: "रेटिंग",
+    available: "उपलब्ध",
+    booked: "बुक किया हुआ",
+
+    // Booking & Real-World Calculations
+    landSizeCalcTitle: "खेत का आकार एवं स्मार्ट जुताई कैलकुलेटर",
+    landUnit: "इकाई",
+    bigha: "बीघा (Bigha)",
+    acre: "एकड़ (Acre)",
+    guntha: "गुंठा (Guntha)",
+    estTime: "अनुमानित समय",
+    estDiesel: "आवश्यक डीजल",
+    estCost: "ईंधन लागत",
+    gpsRoute: "लाइव GPS मार्ग",
+    callOwner: "मालिक को कॉल करें",
+    callDriver: "ड्राइवर को कॉल करें",
+    otpBadge: "कार्य समापन ओटीपी",
+    smsDelivered: "मोबाइल पर एसएमएस भेजा गया",
+    resendOtp: "पुनः एसएमएस ओटीपी भेजें",
+
+    langName: "हिन्दी",
   },
 };

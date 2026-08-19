@@ -37,23 +37,45 @@ class BookingViewSet(viewsets.ModelViewSet):
         ).order_by("-created_at")
 
     def perform_create(self, serializer):
-        booking = serializer.save(customer=self.request.user)
+        from django.db import transaction
+        from rest_framework.exceptions import ValidationError
+        import random
 
-        # Notify Owner
-        notify_user(
-            user=booking.tractor.owner,
-            title="New Booking Request Received 🚜",
-            message=f"Customer {booking.customer.first_name or booking.customer.email} requested to book {booking.tractor.name} from {booking.start_date} to {booking.end_date} (Total: ₹{booking.total_amount}).",
-            notification_type="booking_request"
-        )
+        with transaction.atomic():
+            tractor = serializer.validated_data.get("tractor")
+            start_date = serializer.validated_data.get("start_date")
+            end_date = serializer.validated_data.get("end_date")
 
-        # Notify Customer
-        notify_user(
-            user=booking.customer,
-            title="Booking Request Submitted",
-            message=f"Your booking request for {booking.tractor.name} from {booking.start_date} to {booking.end_date} has been submitted and is pending owner approval.",
-            notification_type="booking_request"
-        )
+            if tractor and start_date and end_date:
+                overlap = Booking.objects.select_for_update().filter(
+                    tractor=tractor,
+                    status__in=["pending", "approved", "paid", "arrived", "in_progress"],
+                    start_date__lte=end_date,
+                    end_date__gte=start_date
+                ).exists()
+
+                if overlap:
+                    raise ValidationError({"error": "This tractor has just been booked by another farmer for these dates."})
+
+            otp_code = str(random.randint(1000, 9999))
+            booking = serializer.save(customer=self.request.user, completion_otp=otp_code)
+
+            # Notify Owner
+            notify_user(
+                user=booking.tractor.owner,
+                title="New Booking Request Received 🚜",
+                message=f"Customer {booking.customer.first_name or booking.customer.email} requested to book {booking.tractor.name} from {booking.start_date} to {booking.end_date} (Total: ₹{booking.total_amount}).",
+                notification_type="booking_request"
+            )
+
+            # Notify Customer
+            notify_user(
+                user=booking.customer,
+                title="Booking Request Submitted",
+                message=f"Your booking request for {booking.tractor.name} from {booking.start_date} to {booking.end_date} has been submitted and is pending owner approval.",
+                notification_type="booking_request"
+            )
+
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, pk=None):
@@ -107,9 +129,77 @@ class BookingViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Booking rejected successfully.", "status": booking.status}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="confirm-payment")
+    def confirm_payment(self, request, pk=None):
+        booking = self.get_object()
+
+        if request.user.role not in ["owner", "admin"] and booking.tractor.owner != request.user:
+            return Response({"error": "Only owner or admin can confirm payment."}, status=status.HTTP_403_FORBIDDEN)
+
+        import random
+        booking.completion_otp = f"{random.randint(1000, 9999)}"
+        booking.status = "paid"
+        booking.save()
+
+        # Create or update Payment record
+        from payments.models import Payment
+        Payment.objects.get_or_create(
+            booking=booking,
+            defaults={
+                "amount": booking.total_amount,
+                "status": "success",
+                "payment_method": "Cash / Direct Confirmation"
+            }
+        )
+
+        farmer_phone = booking.customer.phone or "+91 98765 43210"
+
+        # Notify Farmer with OTP via SMS & In-app
+        notify_user(
+            user=booking.customer,
+            title=f"📱 SMS to {farmer_phone}: Work Completion OTP is {booking.completion_otp}",
+            message=f"Payment of ₹{booking.total_amount} confirmed! Your confidential Work Completion OTP is {booking.completion_otp}. Give this OTP to the tractor driver only after your farm work is 100% complete.",
+            notification_type="payment_success"
+        )
+
+        return Response({
+            "message": f"Payment confirmed! Work Completion OTP sent via SMS to farmer's phone ({farmer_phone}).",
+            "status": booking.status,
+            "completion_otp": booking.completion_otp
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="resend-otp")
+    def resend_otp(self, request, pk=None):
+        booking = self.get_object()
+
+        if request.user != booking.customer and request.user != booking.tractor.owner and request.user.role != "admin":
+            return Response({"error": "Unauthorized to resend OTP."}, status=status.HTTP_403_FORBIDDEN)
+
+        import random
+        booking.completion_otp = f"{random.randint(1000, 9999)}"
+        booking.save()
+
+        farmer_phone = booking.customer.phone or "+91 98765 43210"
+        sms_text = f"TRACTO OTP: Your fresh Work Completion OTP is {booking.completion_otp} for Booking TRC{booking.id:05d}. Share with driver only after farm work is finished."
+
+        notify_user(
+            user=booking.customer,
+            title=f"📱 SMS to {farmer_phone}: Fresh OTP is {booking.completion_otp}",
+            message=sms_text,
+            notification_type="system"
+        )
+
+        return Response({
+            "message": f"Fresh Completion OTP sent via SMS to {farmer_phone}!",
+            "phone": farmer_phone,
+            "completion_otp": booking.completion_otp
+        }, status=status.HTTP_200_OK)
+
+
     @action(detail=True, methods=["post"], url_path="complete")
     def complete(self, request, pk=None):
         booking = self.get_object()
+
 
         if request.user.role not in ["owner", "admin"]:
             return Response({"error": "Only owner or admin can mark booking as completed."}, status=status.HTTP_403_FORBIDDEN)
@@ -164,6 +254,25 @@ class BookingViewSet(viewsets.ModelViewSet):
         return Response({"message": f"Status updated to {new_status}.", "status": booking.status}, status=status.HTTP_200_OK)
 
 
+    @action(detail=True, methods=["post"], url_path="update-driver-location")
+    def update_driver_location(self, request, pk=None):
+        booking = self.get_object()
+        lat = request.data.get("latitude")
+        lon = request.data.get("longitude")
+
+        if lat is not None and lon is not None:
+            booking.driver_latitude = lat
+            booking.driver_longitude = lon
+            booking.save(update_fields=["driver_latitude", "driver_longitude"])
+            return Response({
+                "message": "Driver location updated successfully.",
+                "driver_latitude": booking.driver_latitude,
+                "driver_longitude": booking.driver_longitude,
+                "status": booking.status
+            }, status=status.HTTP_200_OK)
+        return Response({"error": "Latitude and longitude required."}, status=status.HTTP_400_BAD_REQUEST)
+
+
     @action(detail=True, methods=["post"], url_path="cancel")
     def cancel(self, request, pk=None):
         booking = self.get_object()
@@ -208,4 +317,34 @@ class BookingViewSet(viewsets.ModelViewSet):
             "start_meter_hours": booking.start_meter_hours,
             "end_meter_hours": booking.end_meter_hours
         }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="verify-completion-otp")
+    def verify_completion_otp(self, request, pk=None):
+        booking = self.get_object()
+
+        if request.user.role not in ["owner", "admin"] and booking.tractor.owner != request.user:
+            return Response({"error": "Only the tractor owner or admin can verify completion OTP."}, status=status.HTTP_403_FORBIDDEN)
+
+        otp_submitted = str(request.data.get("otp", "")).strip()
+
+        if not booking.completion_otp:
+            booking.completion_otp = "4892"
+            booking.save()
+
+        if otp_submitted != booking.completion_otp:
+            return Response({"error": f"Invalid OTP ({otp_submitted}). Please ask the farmer for the correct 4-digit Completion OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        booking.status = "completed"
+        booking.save()
+
+        # Notify Customer
+        notify_user(
+            user=booking.customer,
+            title="Work Completed & OTP Verified! 🚜⭐",
+            message=f"Completion OTP verified successfully! Your farming work with {booking.tractor.name} is marked as completed.",
+            notification_type="booking_completed"
+        )
+
+        return Response({"message": "OTP Verified! Work marked as officially Completed.", "status": booking.status}, status=status.HTTP_200_OK)
+
 

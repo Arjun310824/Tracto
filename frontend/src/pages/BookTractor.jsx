@@ -26,12 +26,22 @@ function BookTractor() {
   const [purpose, setPurpose] = useState("");
   const [notes, setNotes] = useState("");
 
+  // Land Size & Implement Calculator State
+  const [farmingWorkType, setFarmingWorkType] = useState("plowing"); // "plowing", "transport", "rotavator", "sowing", "harvesting", "leveling"
+  const [transportBags, setTransportBags] = useState(40);
+  const [transportDistanceKm, setTransportDistanceKm] = useState(15);
+  const [landUnit, setLandUnit] = useState("bigha"); // "bigha", "acre", "guntha"
+  const [landSize, setLandSize] = useState(5);
+  const [selectedCrop, setSelectedCrop] = useState("Cotton (કપાસ)");
+
   const [totalAmount, setTotalAmount] = useState(0);
   const [daysCount, setDaysCount] = useState(1);
   const [implementsTotal, setImplementsTotal] = useState(0);
 
   const [existingBookings, setExistingBookings] = useState([]);
   const [isDateUnavailable, setIsDateUnavailable] = useState(false);
+
+
 
   useEffect(() => {
     if (!user) {
@@ -125,6 +135,24 @@ function BookTractor() {
   }, [startDate, endDate, durationMode, hourlyUnits, tractor, selectedImplementIds, implementsList, existingBookings]);
 
 
+  const handleSelectWorkType = (typeId) => {
+    setFarmingWorkType(typeId);
+    if (!implementsList || implementsList.length === 0) return;
+
+    let keyword = "";
+    if (typeId === "transport") keyword = "trolley";
+    else if (typeId === "rotavator") keyword = "rotavator";
+    else if (typeId === "sowing") keyword = "drill";
+    else if (typeId === "plowing") keyword = "plough";
+    else if (typeId === "harvesting") keyword = "thresher";
+    else if (typeId === "leveling") keyword = "leveler";
+
+    const matched = implementsList.find((imp) => imp.name?.toLowerCase().includes(keyword) || imp.description?.toLowerCase().includes(keyword));
+    if (matched && !selectedImplementIds.includes(matched.id)) {
+      setSelectedImplementIds([...selectedImplementIds, matched.id]);
+    }
+  };
+
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
     setError("");
@@ -136,6 +164,10 @@ function BookTractor() {
 
     setSubmitting(true);
     try {
+      const generatedPurpose = farmingWorkType === "transport" 
+        ? `Crop Transport: ${transportBags} bags of ${selectedCrop} to Mandi (${transportDistanceKm} km)`
+        : purpose || `Agricultural ${farmingWorkType} on ${landSize} ${landUnit} ${selectedCrop} farm`;
+
       await api.post("bookings/", {
         tractor: tractor.id,
         selected_implements: selectedImplementIds,
@@ -143,11 +175,16 @@ function BookTractor() {
         end_date: durationMode === "daily" ? endDate : startDate,
         rental_duration_type: durationMode,
         rental_units: durationMode === "daily" ? daysCount : hourlyUnits,
-        purpose,
+        farming_work_type: farmingWorkType,
+        crop_name: selectedCrop,
+        land_area_size: landSize,
+        land_area_unit: landUnit,
+        purpose: generatedPurpose,
         notes,
       });
 
       navigate("/my-bookings");
+
     } catch (err) {
       console.error("Error creating booking:", err);
       const errData = err.response?.data;
@@ -239,8 +276,143 @@ function BookTractor() {
               <h5 className="fw-bold text-dark mb-3 pb-2 border-bottom">Booking Details</h5>
 
               <form onSubmit={handleSubmitBooking}>
+                {/* Agricultural Work Purpose Selection Grid */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
+                    🚜 1. Select Agricultural Work Purpose (ખેતીકામનો હેતુ અને જરૂરિયાત પસંદ કરો)
+                  </label>
+                  <div className="row g-2">
+                    {[
+                      { id: "plowing", icon: "🌾", title: "જમીન ખેડવા (Plowing)", sub: "MB Plough / Cultivator" },
+                      { id: "transport", icon: "🚛", title: "પાક ટ્રાન્સપોર્ટ (Trolley)", sub: "Grain haulage to Mandi" },
+                      { id: "rotavator", icon: "🔄", title: "રોટાવેટર (Rotavator)", sub: "Fine seed bed preparation" },
+                      { id: "sowing", icon: "🌱", title: "વાવણી (Seed Sowing)", sub: "Automatic Seed Drill" },
+                      { id: "harvesting", icon: "🚜", title: "કાપણી / થ્રેશર (Thresher)", sub: "Threshing crop grains" },
+                      { id: "leveling", icon: "📐", title: "લેવલિંગ (Land Leveler)", sub: "Surface laser leveling" },
+                    ].map((item) => (
+                      <div key={item.id} className="col-6 col-md-4">
+                        <div
+                          className={`p-2.5 rounded-3 border text-center cursor-pointer transition-all ${
+                            farmingWorkType === item.id
+                              ? "bg-success text-white border-success shadow-sm"
+                              : "bg-light text-dark"
+                          }`}
+                          onClick={() => handleSelectWorkType(item.id)}
+                          style={{ cursor: "pointer", transition: "all 0.2s" }}
+                        >
+                          <div className="fs-5 mb-0.5">{item.icon}</div>
+                          <div className="fw-bold small lh-sm">{item.title}</div>
+                          <div className={`mt-0.5 ${farmingWorkType === item.id ? "text-light opacity-90" : "text-muted"}`} style={{ fontSize: "0.68rem" }}>
+                            {item.sub}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Conditional Work Details */}
+                {farmingWorkType === "transport" ? (
+                  <div className="bg-warning-subtle p-3 rounded-4 border border-warning-subtle mb-4">
+                    <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
+                      🚛 Crop Transport & Trolley Haulage Details (પાક માલવહન વિગતો)
+                    </div>
+                    <div className="text-muted small mb-2" style={{ fontSize: "0.75rem" }}>
+                      Trolley attachment is automatically bundled for transporting crop harvest to APMC Mandi or Warehouse.
+                    </div>
+                    <div className="row g-2 mt-1">
+                      <div className="col-6">
+                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Crop / Commodity (પાક)</label>
+                        <select className="form-select form-select-sm rounded-3" value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
+                          <option value="Cotton (કપાસ)">Cotton (કપાસ)</option>
+                          <option value="Groundnut (મગફળી)">Groundnut (મગફળી)</option>
+                          <option value="Wheat (ઘઉં)">Wheat (ઘઉં)</option>
+                          <option value="Paddy (ડાંગર)">Paddy (ડાંગર)</option>
+                          <option value="Cumin / Spices (જીરું)">Cumin / Spices (જીરું)</option>
+                        </select>
+                      </div>
+                      <div className="col-3">
+                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Quantity (Bags/ગુણી)</label>
+                        <input
+                          type="number"
+                          min="5"
+                          className="form-control form-control-sm rounded-3"
+                          value={transportBags}
+                          onChange={(e) => setTransportBags(parseInt(e.target.value) || 10)}
+                        />
+                      </div>
+                      <div className="col-3">
+                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Trip Distance (km)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="form-control form-control-sm rounded-3"
+                          value={transportDistanceKm}
+                          onChange={(e) => setTransportDistanceKm(parseInt(e.target.value) || 5)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Farm Land Size & Smart Plowing Calculator */
+                  <div className="bg-success-subtle p-3 rounded-4 border border-success-subtle mb-4">
+                    <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
+                      🌾 Farm Land Size & Smart Plowing Calculator (ખેતરનું માપ અને અંદાજ)
+                    </div>
+                    <div className="text-muted small mb-3" style={{ fontSize: "0.75rem" }}>
+                      Enter your farm area and crop to automatically calculate required plowing hours and diesel consumption!
+                    </div>
+
+
+                  <div className="row g-2 align-items-center mb-2">
+                    <div className="col-4">
+                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Unit (એકમ)</label>
+                      <select className="form-select form-select-sm rounded-3" value={landUnit} onChange={(e) => setLandUnit(e.target.value)}>
+                        <option value="bigha">વીઘા (Bigha)</option>
+                        <option value="acre">એકર (Acre)</option>
+                        <option value="guntha">ગૂંઠા (Guntha)</option>
+                      </select>
+                    </div>
+                    <div className="col-4">
+                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Area Size (માપ)</label>
+                      <input
+                        type="number"
+                        min="0.5"
+                        step="0.5"
+                        className="form-control form-control-sm rounded-3"
+                        value={landSize}
+                        onChange={(e) => setLandSize(parseFloat(e.target.value) || 1)}
+                      />
+                    </div>
+                    <div className="col-4">
+                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Crop (પાક)</label>
+                      <select className="form-select form-select-sm rounded-3" value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
+                        <option value="Cotton">કપાસ (Cotton)</option>
+                        <option value="Groundnut">મગફળી (Groundnut)</option>
+                        <option value="Wheat">ઘઉં (Wheat)</option>
+                        <option value="Paddy">ડાંગર (Paddy)</option>
+                        <option value="Cumin">જીરું (Cumin)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center bg-white p-2.5 rounded-3 border">
+                    <span className="small text-dark fw-bold">
+                      ⏱️ Est. Time: <span className="text-primary font-monospace">{Math.round(landSize * (landUnit === 'acre' ? 1.5 : landUnit === 'bigha' ? 0.75 : 0.05) * 10) / 10} hrs</span>
+                    </span>
+                    <span className="small text-dark fw-bold">
+                      ⛽ Diesel: <span className="text-warning font-monospace">{Math.round(landSize * (landUnit === 'acre' ? 5.2 : landUnit === 'bigha' ? 2.6 : 0.2) * 10) / 10} L</span>
+                    </span>
+                    <span className="small text-dark fw-bold">
+                      💰 Fuel Cost: <span className="text-success font-monospace">~₹{Math.round(landSize * (landUnit === 'acre' ? 5.2 : landUnit === 'bigha' ? 2.6 : 0.2) * 92)}</span>
+                    </span>
+                  </div>
+                </div>
+                )}
+
                 {/* Rental Type Selector */}
                 <div className="mb-4">
+
                   <label className="form-label fw-semibold text-muted small">Rental Duration Type</label>
                   <div className="d-flex gap-3">
                     <div className={`flex-fill p-3 text-center rounded-3 border cursor-pointer ${durationMode === "daily" ? "border-success bg-success-subtle text-success font-weight-bold" : "bg-light text-muted"}`} onClick={() => setDurationMode("daily")} style={{ cursor: "pointer" }}>

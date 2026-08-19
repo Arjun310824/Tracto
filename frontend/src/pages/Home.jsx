@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaTractor, FaShieldAlt, FaClock, FaCheckCircle, FaStar, FaArrowRight, FaMapMarkerAlt } from "react-icons/fa";
+import { FaSearch, FaTractor, FaShieldAlt, FaClock, FaCheckCircle, FaStar, FaArrowRight, FaMapMarkerAlt, FaRobot } from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import TractorCard from "../components/TractorCard";
+import { useLanguage } from "../context/LanguageContext";
 
 function Home() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [featuredTractors, setFeaturedTractors] = useState([]);
@@ -46,14 +48,13 @@ function Home() {
           <div className="row align-items-center g-4 py-4">
             <div className="col-lg-7">
               <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold mb-3">
-                🌾 #1 Agricultural Equipment Rental Platform
+                🌾 {t("heroHeading")}
               </span>
               <h1 className="display-4 fw-extrabold text-white mb-3 leading-tight">
-                Rent Modern Tractors <br />
-                <span className="text-warning">On-Demand & Risk-Free</span>
+                {t("heroHeading")}
               </h1>
               <p className="lead text-light opacity-90 mb-4" style={{ maxWidth: 600 }}>
-                Connecting farmers with local tractor owners for fast, affordable, and flexible farming equipment rentals across India.
+                {t("heroSubheading")}
               </p>
 
               {/* Quick Search Widget */}
@@ -65,13 +66,11 @@ function Home() {
                   <input
                     type="text"
                     className="form-control border-0 text-dark"
-                    placeholder="Tractor brand or name (e.g. Mahindra)"
+                    placeholder={t("searchPlaceholder")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-
-                <div className="vr d-none d-md-block my-2"></div>
 
                 <div className="input-group">
                   <span className="input-group-text bg-transparent border-0 text-muted">
@@ -80,60 +79,73 @@ function Home() {
                   <input
                     type="text"
                     className="form-control border-0 text-dark"
-                    placeholder="Location / District (e.g. Ahmedabad)"
+                    placeholder="Sanand, Ahmedabad..."
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                   />
                 </div>
 
-                <button type="submit" className="btn btn-tracto-primary px-4 rounded-3 d-flex align-items-center justify-content-center gap-2">
-                  <FaSearch /> Search
+                <button type="submit" className="btn btn-tracto-primary rounded-3 px-4 d-flex align-items-center justify-content-center gap-2 text-nowrap">
+                  <FaSearch /> {t("exploreTractors")}
                 </button>
               </form>
-            </div>
 
-            <div className="col-lg-5 text-center">
-              <img
-                src="http://127.0.0.1:8000/media/tractors/john_deere_gen.png"
-                alt="Modern Farm Tractor"
-                className="img-fluid rounded-4 shadow-lg border border-2 border-white-50"
-                style={{ maxHeight: 380, objectFit: "cover" }}
-              />
-
+              <div className="d-flex align-items-center gap-3 mt-4 flex-wrap">
+                <Link to="/ai-advisor" className="btn btn-warning text-dark fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+                  <FaRobot /> {t("instantAiAdvisor")}
+                </Link>
+                <Link to="/breakdown-support" className="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
+                  🚨 {t("breakdownSupport")}
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Value Proposition Highlights */}
+      {/* How it Works / Value Props */}
       <section className="py-5 bg-white border-bottom">
         <div className="container py-3">
+          <div className="text-center mb-5">
+            <h2 className="fw-extrabold text-dark">{t("howItWorks")}</h2>
+            <p className="text-muted">Real-world safety, verified equipment, and reliable agricultural logistics</p>
+          </div>
+
           <div className="row g-4 text-center">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="p-3">
                 <div className="bg-success-subtle text-success p-3 rounded-circle d-inline-flex mb-3 fs-3">
-                  <FaShieldAlt />
+                  <FaTractor />
                 </div>
-                <h5 className="fw-bold">Verified Owners & Tractors</h5>
-                <p className="text-muted small">Every tractor listed is inspected and approved by admin for guaranteed quality.</p>
+                <h5 className="fw-bold">{t("step1Title")}</h5>
+                <p className="text-muted small">{t("step1Desc")}</p>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
+              <div className="p-3">
+                <div className="bg-primary-subtle text-primary p-3 rounded-circle d-inline-flex mb-3 fs-3">
+                  <FaMapMarkerAlt />
+                </div>
+                <h5 className="fw-bold">{t("step2Title")}</h5>
+                <p className="text-muted small">{t("step2Desc")}</p>
+              </div>
+            </div>
+            <div className="col-md-3">
               <div className="p-3">
                 <div className="bg-warning-subtle text-warning p-3 rounded-circle d-inline-flex mb-3 fs-3">
                   <FaClock />
                 </div>
-                <h5 className="fw-bold">Flexible Hourly & Daily Rent</h5>
-                <p className="text-muted small">Rent for a few hours of plowing or full days of harvest at transparent pricing.</p>
+                <h5 className="fw-bold">{t("step3Title")}</h5>
+                <p className="text-muted small">{t("step3Desc")}</p>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="p-3">
                 <div className="bg-info-subtle text-info p-3 rounded-circle d-inline-flex mb-3 fs-3">
                   <FaCheckCircle />
                 </div>
-                <h5 className="fw-bold">Instant Booking & Payments</h5>
-                <p className="text-muted small">Send booking requests directly to owners and pay securely via online payments.</p>
+                <h5 className="fw-bold">{t("step4Title")}</h5>
+                <p className="text-muted small">{t("step4Desc")}</p>
               </div>
             </div>
           </div>

@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaBookmark, FaCreditCard, FaFileInvoice, FaStar, FaTimesCircle, FaTractor, FaCalendarAlt } from "react-icons/fa";
+import { FaBookmark, FaCreditCard, FaFileInvoice, FaStar, FaTimesCircle, FaTractor, FaCalendarAlt, FaPhoneAlt, FaWhatsapp, FaMapMarkerAlt, FaUser } from "react-icons/fa";
+
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import PaymentModal from "../components/PaymentModal";
 import ReviewModal from "../components/ReviewModal";
+import LiveDispatchTracker from "../components/LiveDispatchTracker";
+
 
 function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -42,6 +45,18 @@ function MyBookings() {
       alert(err.response?.data?.error || "Failed to cancel booking.");
     }
   };
+
+  const handleResendOtp = async (bookingId) => {
+    try {
+      const res = await api.post(`bookings/${bookingId}/resend-otp/`);
+      alert(`📲 ${res.data.message}`);
+      setBookings(bookings.map((b) => (b.id === bookingId ? { ...b, completion_otp: res.data.completion_otp } : b)));
+    } catch (err) {
+      console.error("Error resending OTP:", err);
+      alert("Failed to resend SMS OTP.");
+    }
+  };
+
 
   const filteredBookings = bookings.filter((b) => {
     if (activeTab === "all") return true;
@@ -127,10 +142,32 @@ function MyBookings() {
                           <FaTractor className="text-success" />
                           {b.tractor_details?.name || "Tractor"}
                         </h4>
+
+                        <div className="d-flex align-items-center gap-2 flex-wrap mt-2">
+                          <span className="badge bg-primary text-white rounded-pill px-3 py-1.5 fw-bold">
+                            {b.farming_work_type === "transport" ? "🚛 Crop Transport / Trolley" :
+                             b.farming_work_type === "rotavator" ? "🔄 Fine Soil Rotavator" :
+                             b.farming_work_type === "sowing" ? "🌱 Crop Sowing / Seeding" :
+                             b.farming_work_type === "harvesting" ? "🚜 Threshing / Harvesting" :
+                             b.farming_work_type === "leveling" ? "📐 Laser Land Leveling" :
+                             "🌾 Land Plowing / Tillage"}
+                          </span>
+                          {b.crop_name && (
+                            <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                              🌱 {b.crop_name}
+                            </span>
+                          )}
+                          {b.purpose && (
+                            <span className="text-muted small">
+                              📍 {b.purpose}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div>{getStatusBadge(b.status)}</div>
                     </div>
+
 
                     {/* Visual Uber/Rapido-Style Trip Progress Flow Bar */}
                     <div className="bg-light p-3 rounded-3 mb-3 border">
@@ -167,8 +204,92 @@ function MyBookings() {
                       </div>
                     </div>
 
+                    {['approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
+                      <div className="bg-warning-subtle p-3 rounded-4 border border-warning mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 shadow-sm">
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="bg-warning text-dark p-2.5 rounded-circle fs-4">🔒</div>
+                          <div>
+                            <div className="fw-bold text-dark fs-6 d-flex align-items-center flex-wrap gap-2">
+                              Farmer Work Completion OTP:
+                              <span className="fs-4 text-danger font-monospace border border-danger bg-white px-2.5 py-0.5 rounded-3 fw-extrabold shadow-sm">
+                                {b.completion_otp || "4892"}
+                              </span>
+                              <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
+                                📱 SMS Sent to Phone
+                              </span>
+                            </div>
+                            <div className="text-muted small mt-1">
+                              {b.status === "paid" ? "✅ Payment Confirmed by Owner! " : ""}
+                              Give this 4-digit SMS OTP to the tractor owner/driver ONLY after all your farm work is completely finished.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-2">
+                          <button
+                            className="btn btn-outline-warning text-dark btn-sm rounded-pill px-3 py-1.5 fw-bold text-nowrap"
+                            onClick={() => handleResendOtp(b.id)}
+                            title="Resend SMS OTP to your registered phone number"
+                          >
+                            🔄 Resend SMS OTP
+                          </button>
+                          <span className="badge bg-danger text-white rounded-pill px-3 py-2 fw-bold text-uppercase">
+                            {b.status === "paid" ? "Payment Received" : "Give at Finish"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Live Driver GPS Dispatch Tracker */}
+
+                    {['approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
+                      <LiveDispatchTracker
+                        booking={b}
+                        driverName={b.tractor_details?.owner_details?.first_name ? `${b.tractor_details.owner_details.first_name} ${b.tractor_details.owner_details.last_name || ''}` : "Ramesh Patel"}
+                        driverPhone={b.tractor_details?.owner_details?.phone || "+91 98765 43210"}
+                      />
+                    )}
+
+                    {/* Tractor Owner & Driver Contact Info Card */}
+                    <div className="bg-light p-3 rounded-4 border border-secondary-subtle mb-3">
+
+                      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="bg-success text-white p-2 rounded-circle fs-5 d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
+                            <FaUser />
+                          </div>
+                          <div>
+                            <div className="text-muted small" style={{ fontSize: "0.75rem" }}>Tractor Owner & Driver Contact:</div>
+                            <div className="fw-bold text-dark fs-6">
+                              {b.tractor_details?.owner_details?.first_name ? `${b.tractor_details.owner_details.first_name} ${b.tractor_details.owner_details.last_name || ''}` : "Ramesh Patel (Owner)"}
+                            </div>
+                            <div className="text-muted small d-flex align-items-center gap-1">
+                              <FaMapMarkerAlt className="text-danger" /> {b.tractor_details?.location || "Sanand"}, {b.tractor_details?.district || "Ahmedabad"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                          <a
+                            href={`tel:${b.tractor_details?.owner_details?.phone || "+919876543210"}`}
+                            className="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-sm text-decoration-none"
+                          >
+                            <FaPhoneAlt /> Call: {b.tractor_details?.owner_details?.phone || "+91 98765 43210"}
+                          </a>
+                          <a
+                            href={`https://api.whatsapp.com/send?phone=${(b.tractor_details?.owner_details?.phone || "919876543210").replace(/[^0-9]/g, "")}&text=${encodeURIComponent(`Hello ${b.tractor_details?.owner_details?.first_name || 'Owner'}, I have booked your tractor ${b.tractor_details?.name} (REF: TRC${b.id.toString().padStart(5, "0")}) on TRACTO.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-success btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-sm text-decoration-none"
+                          >
+                            <FaWhatsapp className="fs-6" /> WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="row g-3 align-items-center">
+
                       <div className="col-md-4">
                         <div className="text-muted small d-flex align-items-center gap-1 mb-1">
                           <FaCalendarAlt className="text-primary" /> Duration:

@@ -8,13 +8,24 @@ import api from "../api/axios";
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { lang, toggleLanguage, t } = useLanguage();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const { lang, setLang, toggleLanguage, t } = useLanguage();
+
+  const user = (() => {
+    try {
+      const u = localStorage.getItem("user");
+      if (!u || u === "null" || u === "undefined") return null;
+      const parsed = JSON.parse(u);
+      return parsed && (parsed.id || parsed.email) ? parsed : null;
+    } catch {
+      return null;
+    }
+  })();
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -45,9 +56,13 @@ function Navbar() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     localStorage.clear();
     navigate("/login");
   };
+
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark navbar-tracto sticky-top px-3 py-2 shadow-sm">
@@ -86,15 +101,56 @@ function Navbar() {
           </ul>
 
           <div className="d-flex align-items-center gap-3">
-            {/* Global Language Toggle Button */}
-            <button
-              className="btn btn-outline-light btn-sm rounded-pill d-flex align-items-center gap-1.5 px-3 py-1.5 fw-bold border-light-subtle shadow-sm"
-              onClick={toggleLanguage}
-              title="Switch Language / ભાષા બદલો"
-            >
-              <FaGlobe className="text-warning" />
-              <span>{lang === "gu" ? "ગુજરાતી" : "English"}</span>
-            </button>
+            {/* Global Language Selector Dropdown (React State Controlled) */}
+            <div className="position-relative">
+              <button
+                className="btn btn-outline-light btn-sm rounded-pill d-flex align-items-center gap-1.5 px-3 py-1.5 fw-bold border-light-subtle shadow-sm"
+                type="button"
+                onClick={() => setShowLangMenu(!showLangMenu)}
+              >
+                <FaGlobe className="text-warning" />
+                <span>{lang === "gu" ? "🌾 ગુજરાતી" : lang === "hi" ? "🇮🇳 हिन्दी" : "🌐 English"}</span>
+              </button>
+              {showLangMenu && (
+                <ul className="position-absolute end-0 mt-2 bg-white text-dark shadow-lg rounded-3 border p-1 list-unstyled z-3" style={{ minWidth: 170 }}>
+                  <li>
+                    <button
+                      className={`dropdown-item d-flex align-items-center gap-2 small py-2 px-3 rounded-2 w-100 border-0 bg-transparent text-start ${lang === 'gu' ? 'fw-bold bg-success-subtle text-success' : 'text-dark'}`}
+                      onClick={() => {
+                        setLang('gu');
+                        setShowLangMenu(false);
+                      }}
+                    >
+                      🌾 ગુજરાતી (Gujarati)
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`dropdown-item d-flex align-items-center gap-2 small py-2 px-3 rounded-2 w-100 border-0 bg-transparent text-start ${lang === 'hi' ? 'fw-bold bg-success-subtle text-success' : 'text-dark'}`}
+                      onClick={() => {
+                        setLang('hi');
+                        setShowLangMenu(false);
+                      }}
+                    >
+                      🇮🇳 हिन्दी (Hindi)
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`dropdown-item d-flex align-items-center gap-2 small py-2 px-3 rounded-2 w-100 border-0 bg-transparent text-start ${lang === 'en' ? 'fw-bold bg-success-subtle text-success' : 'text-dark'}`}
+                      onClick={() => {
+                        setLang('en');
+                        setShowLangMenu(false);
+                      }}
+                    >
+                      🌐 English
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+
+
 
             {!user ? (
               <div className="d-flex align-items-center gap-2">

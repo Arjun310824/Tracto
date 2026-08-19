@@ -11,6 +11,9 @@ function OwnerBookings() {
   const [meterInputs, setMeterInputs] = useState({});
   const [savingMeterId, setSavingMeterId] = useState(null);
 
+  const [otpInputs, setOtpInputs] = useState({});
+  const [verifyingOtpId, setVerifyingOtpId] = useState(null);
+
   useEffect(() => {
     fetchOwnerBookings();
   }, []);
@@ -38,6 +41,36 @@ function OwnerBookings() {
     }
   };
 
+  const handleVerifyOtp = async (bookingId) => {
+    const otpCode = otpInputs[bookingId] || "";
+    if (!otpCode || otpCode.length < 4) {
+      alert("Please enter the 4-digit Completion OTP provided by the farmer.");
+      return;
+    }
+    setVerifyingOtpId(bookingId);
+    try {
+      const res = await api.post(`bookings/${bookingId}/verify-completion-otp/`, { otp: otpCode });
+      alert("✅ " + res.data.message);
+      setBookings(bookings.map((b) => (b.id === bookingId ? { ...b, status: "completed" } : b)));
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      alert(err.response?.data?.error || "Invalid OTP entered.");
+    } finally {
+      setVerifyingOtpId(null);
+    }
+  };
+
+  const handleConfirmPayment = async (bookingId) => {
+    try {
+      const res = await api.post(`bookings/${bookingId}/confirm-payment/`);
+      alert("✅ " + res.data.message);
+      setBookings(bookings.map((b) => (b.id === bookingId ? { ...b, status: "paid" } : b)));
+    } catch (err) {
+      console.error("Payment confirmation error:", err);
+      alert(err.response?.data?.error || "Failed to confirm payment.");
+    }
+  };
+
   const handleUpdateTripStatus = async (bookingId, newStatus) => {
     try {
       await api.post(`bookings/${bookingId}/update-status/`, { status: newStatus });
@@ -47,6 +80,31 @@ function OwnerBookings() {
       alert("Failed to update trip status.");
     }
   };
+
+  const handleBroadcastDriverLocation = (bookingId) => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            await api.post(`bookings/${bookingId}/update-driver-location/`, {
+              latitude,
+              longitude,
+            });
+            alert(`📡 Real GPS Location broadcasted to farmer! (Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)})`);
+            fetchOwnerBookings();
+          } catch (err) {
+            console.error("Location update error:", err);
+          }
+        },
+        () => {
+          alert("📍 Location permission required to broadcast live driver GPS.");
+        }
+      );
+    }
+  };
+
+
 
   const handleApprove = async (bookingId) => {
     try {
@@ -167,10 +225,27 @@ function OwnerBookings() {
                             <FaTractor className="text-success" />
                             {b.tractor_details?.name || "Tractor"}
                           </h4>
+
+                          <div className="d-flex align-items-center gap-2 flex-wrap mt-2">
+                            <span className="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold">
+                              {b.farming_work_type === "transport" ? "🚛 Crop Transport (Trolley)" :
+                               b.farming_work_type === "rotavator" ? "🔄 Fine Soil Rotavator" :
+                               b.farming_work_type === "sowing" ? "🌱 Sowing / Seeding" :
+                               b.farming_work_type === "harvesting" ? "🚜 Threshing / Harvesting" :
+                               b.farming_work_type === "leveling" ? "📐 Laser Land Leveling" :
+                               "🌾 Land Plowing / Tillage"}
+                            </span>
+                            {b.crop_name && (
+                              <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 small">
+                                🌱 {b.crop_name}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div>{getStatusBadge(b.status)}</div>
                       </div>
+
 
                       <div className="row g-3 align-items-center mb-3">
                         <div className="col-md-3">
@@ -204,10 +279,16 @@ function OwnerBookings() {
                           )}
 
                           {b.status === "approved" && (
-                            <button className="btn btn-info text-white btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleUpdateTripStatus(b.id, "arrived")}>
-                              <FaTruck /> Arrived on Field 🌾
-                            </button>
+                            <>
+                              <button className="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleBroadcastDriverLocation(b.id)} title="Broadcast your real phone GPS coordinates to farmer">
+                                📡 Broadcast Live Driver GPS
+                              </button>
+                              <button className="btn btn-info text-white btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleUpdateTripStatus(b.id, "arrived")}>
+                                <FaTruck /> Arrived on Field 🌾
+                              </button>
+                            </>
                           )}
+
 
                           {b.status === "arrived" && (
                             <button className="btn btn-warning text-dark btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleUpdateTripStatus(b.id, "in_progress")}>
@@ -215,13 +296,46 @@ function OwnerBookings() {
                             </button>
                           )}
 
-                          {(b.status === "in_progress" || b.status === "paid") && (
-                            <button className="btn btn-success btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleUpdateTripStatus(b.id, "completed")}>
-                              <FaCheckDouble /> Mark Work Completed ⭐
+                          {b.status !== "paid" && b.status !== "completed" && b.status !== "pending" && b.status !== "rejected" && b.status !== "cancelled" && (
+                            <button className="btn btn-outline-success btn-sm rounded-pill d-flex align-items-center justify-content-center gap-1.5 fw-bold" onClick={() => handleConfirmPayment(b.id)}>
+                              💰 Confirm Payment Received
                             </button>
                           )}
                         </div>
                       </div>
+
+
+
+                      {/* Farmer Completion OTP Verification */}
+                      {['approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
+                        <div className="bg-warning-subtle p-3 rounded-4 border border-warning mb-3">
+                          <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
+                            🔒 Enter Farmer's Completion OTP to Finish Work
+                          </div>
+                          <div className="text-muted mb-2" style={{ fontSize: "0.75rem" }}>
+                            Ask the farmer for their 4-digit Completion OTP when farm work is complete to officially mark this rental as Completed!
+                          </div>
+
+                          <div className="d-flex gap-2 align-items-center" style={{ maxWidth: 360 }}>
+                            <input
+                              type="text"
+                              maxLength="6"
+                              className="form-control form-control-sm font-monospace fw-extrabold text-center fs-6 rounded-3 border-warning"
+                              placeholder="e.g. 4892"
+                              value={otpInputs[b.id] || ""}
+                              onChange={(e) => setOtpInputs({ ...otpInputs, [b.id]: e.target.value })}
+                            />
+                            <button
+                              className="btn btn-success btn-sm rounded-pill px-3.5 py-1.5 fw-bold text-nowrap shadow-sm d-flex align-items-center gap-1.5"
+                              onClick={() => handleVerifyOtp(b.id)}
+                              disabled={verifyingOtpId === b.id}
+                            >
+                              <FaCheckDouble /> {verifyingOtpId === b.id ? "Verifying..." : "Verify OTP & Complete"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
 
                       {/* Engine Hour Meter Tracker (Feature #5) */}
                       <div className="bg-light p-3 rounded-4 border border-secondary-subtle">
