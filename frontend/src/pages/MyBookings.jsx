@@ -49,14 +49,13 @@ function MyBookings() {
   const handleResendOtp = async (bookingId) => {
     try {
       const res = await api.post(`bookings/${bookingId}/resend-otp/`);
-      alert(`📲 ${res.data.message}`);
+      alert("✅ " + res.data.message);
       setBookings(bookings.map((b) => (b.id === bookingId ? { ...b, completion_otp: res.data.completion_otp } : b)));
     } catch (err) {
-      console.error("Error resending OTP:", err);
-      alert("Failed to resend SMS OTP.");
+      console.error("Error generating fresh OTP:", err);
+      alert("Failed to refresh OTP.");
     }
   };
-
 
   const filteredBookings = bookings.filter((b) => {
     if (activeTab === "all") return true;
@@ -204,23 +203,26 @@ function MyBookings() {
                       </div>
                     </div>
 
-                    {['approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
+
+
+                    {/* In-App Security Work Completion OTP */}
+                    {['pending', 'approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
                       <div className="bg-warning-subtle p-3 rounded-4 border border-warning mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 shadow-sm">
                         <div className="d-flex align-items-center gap-3">
                           <div className="bg-warning text-dark p-2.5 rounded-circle fs-4">🔒</div>
                           <div>
                             <div className="fw-bold text-dark fs-6 d-flex align-items-center flex-wrap gap-2">
-                              Farmer Work Completion OTP:
+                              Farmer Work Completion OTP (કામ પૂરું કરવાનો સુરક્ષિત OTP):
                               <span className="fs-4 text-danger font-monospace border border-danger bg-white px-2.5 py-0.5 rounded-3 fw-extrabold shadow-sm">
                                 {b.completion_otp || "4892"}
                               </span>
                               <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
-                                📱 SMS Sent to Phone
+                                🛡️ In-App Verified
                               </span>
                             </div>
                             <div className="text-muted small mt-1">
-                              {b.status === "paid" ? "✅ Payment Confirmed by Owner! " : ""}
-                              Give this 4-digit SMS OTP to the tractor owner/driver ONLY after all your farm work is completely finished.
+                              {b.status === "paid" ? "✅ Payment Confirmed! " : ""}
+                              ખેતરમાં ખેતીકામ ૧૦૦% પૂરું થાય ત્યારે જ આ ૪-અંકનો OTP ટ્રેક્ટર માલિક/ડ્રાઈવરને આપો જેથી કામ સફળતાપૂર્વક પૂરું થઈ શકે.
                             </div>
                           </div>
                         </div>
@@ -229,9 +231,9 @@ function MyBookings() {
                           <button
                             className="btn btn-outline-warning text-dark btn-sm rounded-pill px-3 py-1.5 fw-bold text-nowrap"
                             onClick={() => handleResendOtp(b.id)}
-                            title="Resend SMS OTP to your registered phone number"
+                            title="Generate a fresh new 4-digit OTP"
                           >
-                            🔄 Resend SMS OTP
+                            🔄 Generate New OTP
                           </button>
                           <span className="badge bg-danger text-white rounded-pill px-3 py-2 fw-bold text-uppercase">
                             {b.status === "paid" ? "Payment Received" : "Give at Finish"}

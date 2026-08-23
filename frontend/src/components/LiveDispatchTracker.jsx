@@ -195,7 +195,7 @@ export default function LiveDispatchTracker({ booking, driverName = "Ramesh Pate
     if (booking?.status === "approved") return `🚚 Tractor dispatched by ${driverName} • En route on road (${currentDist} km away)`;
     if (booking?.status === "arrived") return "📍 Tractor arrived at your farm field • Driver on site 🌾";
     if (booking?.status === "in_progress") return "⏱️ Tractor actively operating on farm field";
-    if (booking?.status === "paid") return "💰 Payment received • Ready for work completion OTP";
+    if (booking?.status === "paid") return "💰 Payment confirmed • Work in progress on farm field";
     if (booking?.status === "completed") return "⭐ Farm rental completed successfully";
     return "🚜 Dispatch tracking active";
   };

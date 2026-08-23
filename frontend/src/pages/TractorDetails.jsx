@@ -282,9 +282,26 @@ function TractorDetails() {
                 ✔ Secure Online Payment Option
               </div>
 
-              <Link to={`/book-tractor/${tractor.id}`} className="btn btn-tracto-primary w-100 py-3 rounded-pill fw-bold text-center mb-3">
-                Book This Tractor
-              </Link>
+              {/* Role-Specific Action Button */}
+              {user && user.role === "owner" ? (
+                tractor.owner === user.id || tractor.owner_details?.id === user.id ? (
+                  <Link to={`/edit-tractor/${tractor.id}`} className="btn btn-outline-success w-100 py-3 rounded-pill fw-bold text-center mb-3">
+                    ✏️ Edit My Tractor Listing
+                  </Link>
+                ) : (
+                  <div className="alert alert-warning text-center small mb-3 py-2">
+                    🚜 You are logged in as an <strong>Equipment Owner</strong>.
+                  </div>
+                )
+              ) : user && user.role === "admin" ? (
+                <Link to="/admin-tractors" className="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold text-center mb-3">
+                  🛡️ Manage Tractor in Admin Portal
+                </Link>
+              ) : (
+                <Link to={`/book-tractor/${tractor.id}`} className="btn btn-tracto-primary w-100 py-3 rounded-pill fw-bold text-center mb-3">
+                  Book This Tractor
+                </Link>
+              )}
 
               {/* Owner Info Box */}
               <div className="border-top pt-3 mt-2">

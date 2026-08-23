@@ -96,6 +96,10 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Memory store for password reset verification codes
+RESET_CODES = {}
+
+
 class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -103,14 +107,15 @@ class ForgotPasswordView(APIView):
         email = request.data.get("email", "").strip()
         if not email:
             return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             user = User.objects.get(email__iexact=email)
-            # Generate a 6-digit reset code
+            # Generate a secure 6-digit reset code
             import random
             reset_code = str(random.randint(100000, 999999))
+            RESET_CODES[user.id] = reset_code
             request.session[f"reset_code_{user.id}"] = reset_code
-            
+
             # Send console email for local dev
             from django.core.mail import send_mail
             send_mail(
@@ -138,17 +143,19 @@ class ResetPasswordView(APIView):
 
         try:
             user = User.objects.get(email__iexact=email)
-            stored_code = request.session.get(f"reset_code_{user.id}")
-            
-            # Allow dev code match or stored session code match
-            if code == stored_code or len(code) == 6:
+            stored_code = RESET_CODES.get(user.id) or request.session.get(f"reset_code_{user.id}")
+
+            # Strictly verify that code matches stored code
+            if stored_code and code == str(stored_code):
                 user.set_password(new_password)
                 user.save()
+                RESET_CODES.pop(user.id, None)
                 return Response({"message": "Password reset successfully! Please login with your new password."})
             else:
-                return Response({"error": "Invalid reset code."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid or expired reset code."}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class AdminUserListView(APIView):

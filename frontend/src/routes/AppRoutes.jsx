@@ -95,8 +95,8 @@ function AppRoutes() {
         <Route path="/ai-advisor" element={<AIRecommendation />} />
         <Route path="/tractor/:id" element={<TractorDetails />} />
 
-        {/* Protected Booking: Strictly requires Login (Farmers or Admins) */}
-        <Route path="/book-tractor/:id" element={<ProtectedRoute allowedRoles={["customer", "admin"]}><BookTractor /></ProtectedRoute>} />
+        {/* Protected Booking: Strictly requires Customer Login */}
+        <Route path="/book-tractor/:id" element={<ProtectedRoute allowedRoles={["customer"]}><BookTractor /></ProtectedRoute>} />
 
         {/* Dashboard Smart Role Redirect */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />

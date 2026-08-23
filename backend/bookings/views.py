@@ -152,18 +152,19 @@ class BookingViewSet(viewsets.ModelViewSet):
             }
         )
 
-        farmer_phone = booking.customer.phone or "+91 98765 43210"
+        farmer_phone = booking.customer.phone or "N/A"
 
-        # Notify Farmer with OTP via SMS & In-app
+        # Notify Farmer with OTP via In-app Notification
         notify_user(
             user=booking.customer,
-            title=f"📱 SMS to {farmer_phone}: Work Completion OTP is {booking.completion_otp}",
+            title=f"Work Completion OTP: {booking.completion_otp} 🔒",
             message=f"Payment of ₹{booking.total_amount} confirmed! Your confidential Work Completion OTP is {booking.completion_otp}. Give this OTP to the tractor driver only after your farm work is 100% complete.",
-            notification_type="payment_success"
+            notification_type="payment_success",
+            otp_code=booking.completion_otp
         )
 
         return Response({
-            "message": f"Payment confirmed! Work Completion OTP sent via SMS to farmer's phone ({farmer_phone}).",
+            "message": f"Payment confirmed! Work Completion OTP generated: {booking.completion_otp}",
             "status": booking.status,
             "completion_otp": booking.completion_otp
         }, status=status.HTTP_200_OK)
@@ -173,25 +174,22 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking = self.get_object()
 
         if request.user != booking.customer and request.user != booking.tractor.owner and request.user.role != "admin":
-            return Response({"error": "Unauthorized to resend OTP."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "Unauthorized to refresh OTP."}, status=status.HTTP_403_FORBIDDEN)
 
         import random
         booking.completion_otp = f"{random.randint(1000, 9999)}"
         booking.save()
 
-        farmer_phone = booking.customer.phone or "+91 98765 43210"
-        sms_text = f"TRACTO OTP: Your fresh Work Completion OTP is {booking.completion_otp} for Booking TRC{booking.id:05d}. Share with driver only after farm work is finished."
-
         notify_user(
             user=booking.customer,
-            title=f"📱 SMS to {farmer_phone}: Fresh OTP is {booking.completion_otp}",
-            message=sms_text,
-            notification_type="system"
+            title=f"Fresh Work Completion OTP: {booking.completion_otp} 🔒",
+            message=f"Fresh Work Completion OTP is {booking.completion_otp} for Booking TRC{booking.id:05d}. Share with driver only after farm work is finished.",
+            notification_type="system",
+            otp_code=booking.completion_otp
         )
 
         return Response({
-            "message": f"Fresh Completion OTP sent via SMS to {farmer_phone}!",
-            "phone": farmer_phone,
+            "message": "Fresh Completion OTP generated successfully!",
             "completion_otp": booking.completion_otp
         }, status=status.HTTP_200_OK)
 
@@ -207,8 +205,8 @@ class BookingViewSet(viewsets.ModelViewSet):
         if request.user.role == "owner" and booking.tractor.owner != request.user:
             return Response({"error": "You do not own this tractor."}, status=status.HTTP_403_FORBIDDEN)
 
-        if booking.status not in ["approved", "paid"]:
-            return Response({"error": "Only approved or paid bookings can be completed."}, status=status.HTTP_400_BAD_REQUEST)
+        if booking.status not in ["approved", "paid", "arrived", "in_progress"]:
+            return Response({"error": "Only active, approved or paid bookings can be completed."}, status=status.HTTP_400_BAD_REQUEST)
 
         booking.status = "completed"
         booking.save()

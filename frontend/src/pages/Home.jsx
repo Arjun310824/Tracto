@@ -9,6 +9,7 @@ import { useLanguage } from "../context/LanguageContext";
 function Home() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const user = JSON.parse(localStorage.getItem("user") || "null");
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [featuredTractors, setFeaturedTractors] = useState([]);
@@ -57,47 +58,96 @@ function Home() {
                 {t("heroSubheading")}
               </p>
 
-              {/* Quick Search Widget */}
-              <form onSubmit={handleSearchSubmit} className="bg-white p-3 rounded-4 shadow-lg d-flex flex-column flex-md-row gap-2" style={{ maxWidth: 640 }}>
-                <div className="input-group">
-                  <span className="input-group-text bg-transparent border-0 text-muted">
-                    <FaTractor />
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control border-0 text-dark"
-                    placeholder={t("searchPlaceholder")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
+              {/* Role-Specific Quick Widget */}
+              {user && user.role === "owner" ? (
+                <div className="bg-white p-4 rounded-4 shadow-lg text-start" style={{ maxWidth: 640 }}>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <span className="badge bg-warning text-dark fw-bold text-uppercase px-2.5 py-1">Owner Portal</span>
+                    <span className="text-muted small">Welcome back, {user.first_name || "Partner"}!</span>
+                  </div>
+                  <h5 className="fw-bold text-dark mb-2">Manage Your Machinery & Booking Requests</h5>
+                  <p className="text-secondary small mb-3">
+                    Track your equipment fleet, accept or decline rental requests from farmers, and monitor revenue payouts.
+                  </p>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Link to="/owner-dashboard" className="btn btn-tracto-primary rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-1.5">
+                      <FaTractor /> Go to Owner Dashboard
+                    </Link>
+                    <Link to="/add-tractor" className="btn btn-outline-success rounded-pill px-3 py-2 fw-semibold">
+                      ➕ Add New Tractor
+                    </Link>
+                    <Link to="/owner-bookings" className="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold">
+                      📋 Booking Requests
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="input-group">
-                  <span className="input-group-text bg-transparent border-0 text-muted">
-                    <FaMapMarkerAlt />
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control border-0 text-dark"
-                    placeholder="Sanand, Ahmedabad..."
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
+              ) : user && user.role === "admin" ? (
+                <div className="bg-white p-4 rounded-4 shadow-lg text-start" style={{ maxWidth: 640 }}>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <span className="badge bg-danger text-white fw-bold text-uppercase px-2.5 py-1">Admin Control Center</span>
+                    <span className="text-muted small">Platform Management</span>
+                  </div>
+                  <h5 className="fw-bold text-dark mb-2">Platform Administration & Oversight</h5>
+                  <p className="text-secondary small mb-3">
+                    Review tractor listings, verify user accounts, oversee live bookings, and analyze business metrics.
+                  </p>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Link to="/admin-dashboard" className="btn btn-danger rounded-pill px-3 py-2 fw-semibold">
+                      🛡️ Admin Dashboard
+                    </Link>
+                    <Link to="/admin-tractors" className="btn btn-outline-danger rounded-pill px-3 py-2 fw-semibold">
+                      🚜 Tractor Approvals
+                    </Link>
+                    <Link to="/admin-bookings" className="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold">
+                      📋 All Bookings
+                    </Link>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {/* Quick Search Widget for Farmers / Customers / Guests */}
+                  <form onSubmit={handleSearchSubmit} className="bg-white p-3 rounded-4 shadow-lg d-flex flex-column flex-md-row gap-2" style={{ maxWidth: 640 }}>
+                    <div className="input-group">
+                      <span className="input-group-text bg-transparent border-0 text-muted">
+                        <FaTractor />
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control border-0 text-dark"
+                        placeholder={t("searchPlaceholder")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </div>
 
-                <button type="submit" className="btn btn-tracto-primary rounded-3 px-4 d-flex align-items-center justify-content-center gap-2 text-nowrap">
-                  <FaSearch /> {t("exploreTractors")}
-                </button>
-              </form>
+                    <div className="input-group">
+                      <span className="input-group-text bg-transparent border-0 text-muted">
+                        <FaMapMarkerAlt />
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control border-0 text-dark"
+                        placeholder="Sanand, Ahmedabad..."
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                      />
+                    </div>
 
-              <div className="d-flex align-items-center gap-3 mt-4 flex-wrap">
-                <Link to="/ai-advisor" className="btn btn-warning text-dark fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
-                  <FaRobot /> {t("instantAiAdvisor")}
-                </Link>
-                <Link to="/breakdown-support" className="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
-                  🚨 {t("breakdownSupport")}
-                </Link>
-              </div>
+                    <button type="submit" className="btn btn-tracto-primary rounded-3 px-4 d-flex align-items-center justify-content-center gap-2 text-nowrap">
+                      <FaSearch /> {t("exploreTractors")}
+                    </button>
+                  </form>
+
+                  <div className="d-flex align-items-center gap-3 mt-4 flex-wrap">
+                    <Link to="/ai-advisor" className="btn btn-warning text-dark fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+                      <FaRobot /> {t("instantAiAdvisor")}
+                    </Link>
+                    <Link to="/breakdown-support" className="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
+                      🚨 {t("breakdownSupport")}
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -30,7 +30,11 @@ class ImplementViewSet(viewsets.ModelViewSet):
         return queryset.filter(available=True)
 
     def perform_create(self, serializer):
+        if not (self.request.user.is_authenticated and self.request.user.role in ["owner", "admin"]):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only tractor owners and admins are authorized to add implements.")
         serializer.save(owner=self.request.user)
+
 
 
 class TractorViewSet(viewsets.ModelViewSet):
@@ -138,7 +142,11 @@ class TractorViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
+        if not (self.request.user.is_authenticated and self.request.user.role in ["owner", "admin"]):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only tractor fleet owners and admins are authorized to list tractors.")
         serializer.save(owner=self.request.user)
+
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def upload_images(self, request, pk=None):

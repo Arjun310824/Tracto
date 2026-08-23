@@ -116,9 +116,25 @@ function TractorCard({ tractor, onWishlistToggle }) {
             <div className="text-muted" style={{ fontSize: "0.75rem" }}>₹{tractor.rent_per_hour}/hr</div>
           </div>
 
-          <Link to={`/book-tractor/${tractor.id}`} className="btn btn-tracto-primary btn-sm rounded-pill px-3">
-            Book Now
-          </Link>
+          {user && user.role === "owner" ? (
+            tractor.owner === user.id || tractor.owner_details?.id === user.id ? (
+              <Link to={`/edit-tractor/${tractor.id}`} className="btn btn-outline-success btn-sm rounded-pill px-3">
+                ✏️ Edit
+              </Link>
+            ) : (
+              <Link to={`/tractor/${tractor.id}`} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                Details
+              </Link>
+            )
+          ) : user && user.role === "admin" ? (
+            <Link to="/admin-tractors" className="btn btn-outline-primary btn-sm rounded-pill px-3">
+              Review
+            </Link>
+          ) : (
+            <Link to={`/book-tractor/${tractor.id}`} className="btn btn-tracto-primary btn-sm rounded-pill px-3">
+              Book Now
+            </Link>
+          )}
         </div>
 
       </div>

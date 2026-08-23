@@ -1,0 +1,443 @@
+[
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Valid Customer Login",
+    "expected": "200 OK + JWT access token",
+    "actual": "200 OK (Role: customer)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Valid Owner Login",
+    "expected": "200 OK + JWT access token",
+    "actual": "200 OK (Role: owner)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Valid Admin Login",
+    "expected": "200 OK + JWT access token",
+    "actual": "200 OK (Role: admin)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Wrong Password",
+    "expected": "401 Unauthorized",
+    "actual": "401 {'non_field_errors': ['Invalid email or password.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Nonexistent Email",
+    "expected": "401 Unauthorized",
+    "actual": "401 {'non_field_errors': ['Invalid email or password.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Login",
+    "test": "Empty Credentials",
+    "expected": "400/401 Bad Request",
+    "actual": "401 {'email': ['This field may not be blank.'], 'password': ['This field may not be blank.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Register",
+    "test": "Valid Customer Registration",
+    "expected": "201 Created",
+    "actual": "201 User registered successfully",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Register",
+    "test": "Duplicate Email Registration",
+    "expected": "400 Bad Request",
+    "actual": "400 {'email': ['user with this email already exists.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Register",
+    "test": "Invalid Email Format",
+    "expected": "400 Bad Request",
+    "actual": "400 {'email': ['Enter a valid email address.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / Register",
+    "test": "Missing Fields Registration",
+    "expected": "400 Bad Request",
+    "actual": "400 {'password': ['This field is required.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / JWT",
+    "test": "Refresh Token Exchange",
+    "expected": "200 OK + new access token",
+    "actual": "200 (access in res: True)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / JWT",
+    "test": "Invalid Bearer Token",
+    "expected": "401 Unauthorized",
+    "actual": "401 {'detail': 'Given token not valid for any token type', 'code': 'token_not_valid', 'messages': [{'token_class': 'AccessToken', 'token_type': 'access', 'message': 'Token is invalid'}]}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 3",
+    "feature": "Auth / JWT",
+    "test": "Missing Bearer Token",
+    "expected": "401 Unauthorized",
+    "actual": "401 {'detail': 'Authentication credentials were not provided.'}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor Catalog",
+    "test": "Public Read Catalog",
+    "expected": "200 OK + List of tractors",
+    "actual": "200 OK (12 items)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor Permissions",
+    "test": "Customer Create Tractor (Blocked)",
+    "expected": "403 Forbidden",
+    "actual": "403 Only tractor fleet owners and admins are authorized to list tractors.",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor CRUD",
+    "test": "Owner Create Valid Tractor",
+    "expected": "201 Created",
+    "actual": "201 ID: 18",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor CRUD",
+    "test": "Owner Update Own Tractor",
+    "expected": "200 OK",
+    "actual": "200 Updated rent: 3200.00",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor Permissions",
+    "test": "Customer Update Owner Tractor",
+    "expected": "403 Forbidden",
+    "actual": "403 {'detail': 'You do not have permission to perform this action.'}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor Permissions",
+    "test": "Unauthenticated Delete Tractor",
+    "expected": "401 Unauthorized",
+    "actual": "401",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 4",
+    "feature": "Tractor CRUD",
+    "test": "Owner Delete Own Tractor",
+    "expected": "204 No Content",
+    "actual": "204",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "1. Land Plowing (MB Plough)",
+    "expected": "201 Created with farming_work_type=plowing",
+    "actual": "201 ID #80 (Type: plowing)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "2. Crop Transport (Trolley + Bags + Distance)",
+    "expected": "201 Created with farming_work_type=transport",
+    "actual": "201 ID #81 (Purpose: Crop Transport: 60 bags of Wheat to Mandi (25 km))",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "3. Rotavator Soil Bed Prep",
+    "expected": "201 Created with farming_work_type=rotavator",
+    "actual": "201 ID #82",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "4. Sowing / Seeding (Seed Drill)",
+    "expected": "201 Created with farming_work_type=sowing",
+    "actual": "201 ID #83",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "5. Threshing / Harvesting (Thresher)",
+    "expected": "201 Created with farming_work_type=harvesting",
+    "actual": "201 ID #84",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 5",
+    "feature": "Work-Purpose Booking",
+    "test": "6. Laser Land Leveling",
+    "expected": "201 Created with farming_work_type=leveling",
+    "actual": "201 ID #85",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 6",
+    "feature": "AI Matcher",
+    "test": "Standard Recommendation (Cotton, 10 Acres)",
+    "expected": "200 OK, target_hp >= 45, recommendations > 0",
+    "actual": "200 target_hp: 62, recs: 6",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 6",
+    "feature": "AI Matcher",
+    "test": "Large Land High HP Scaling (25 Acres, Hard Soil)",
+    "expected": "200 OK, target_hp scaled up",
+    "actual": "200 target_hp: 72",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 6",
+    "feature": "AI Matcher",
+    "test": "Fuel & Total Cost Calculation Consistency",
+    "expected": "Positive hours, fuel & cost",
+    "actual": "Hours: 37.8, Fuel: 308.4L, Cost: ₹10584.0",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 6",
+    "feature": "AI Price Advisor",
+    "test": "Owner Price Suggestion Engine",
+    "expected": "200 OK with recommended rent",
+    "actual": "200 Rent/hr: ₹260, Rent/day: ₹1950",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 7",
+    "feature": "GPS / Map",
+    "test": "Tractor Geocoded Coordinates",
+    "expected": "All tractors have valid lat & lon",
+    "actual": "All geocoded: True",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 8",
+    "feature": "Driver Live GPS",
+    "test": "Owner Approves / Dispatches Tractor",
+    "expected": "200 OK, Status: approved",
+    "actual": "200 Status: approved",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 8",
+    "feature": "Driver Live GPS",
+    "test": "Driver Broadcasts Live GPS",
+    "expected": "200 OK with driver_latitude & longitude",
+    "actual": "200 Lat: 22.8765, Lon: 72.4123",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 8",
+    "feature": "Driver Live GPS",
+    "test": "Driver Updates Status to Arrived",
+    "expected": "200 OK, Status: arrived",
+    "actual": "200 Status: arrived",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 11",
+    "feature": "Payment",
+    "test": "Razorpay Create Order API",
+    "expected": "200 OK + order_id",
+    "actual": "200 Order: order_mock_80_9900",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 10",
+    "feature": "SMS OTP",
+    "test": "Payment Confirm & 4-Digit OTP Generation",
+    "expected": "200 OK, Status: paid, OTP generated",
+    "actual": "200 Status: paid, OTP: 2239",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 10",
+    "feature": "SMS OTP",
+    "test": "Invalid OTP Verification Attempt",
+    "expected": "400 Bad Request",
+    "actual": "400 Invalid OTP (0000). Please ask the farmer for the correct 4-digit Completion OTP.",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 10",
+    "feature": "SMS OTP",
+    "test": "Valid OTP Work Completion",
+    "expected": "200 OK, Status: completed",
+    "actual": "200 Status: completed",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 12",
+    "feature": "Concurrency Locking",
+    "test": "Simultaneous Overlapping Booking Race Condition",
+    "expected": "Exactly 1 success (201) and 1 rejection (400)",
+    "actual": "Successes: 1, Rejections: 1",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 13",
+    "feature": "Booking Validation",
+    "test": "Past Start Date Validation",
+    "expected": "400 Bad Request",
+    "actual": "400 {'non_field_errors': ['Start date cannot be in the past.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 13",
+    "feature": "Booking Validation",
+    "test": "End Date Before Start Date Validation",
+    "expected": "400 Bad Request",
+    "actual": "400 {'non_field_errors': ['End date cannot be earlier than start date.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 13",
+    "feature": "Booking Validation",
+    "test": "Overlapping Existing Booking Validation",
+    "expected": "400 Bad Request (Tractor not available)",
+    "actual": "400 {'non_field_errors': ['This tractor is not available for this particular date or time.']}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Customer Access Admin Users API",
+    "expected": "403 Forbidden",
+    "actual": "403 {'error': 'Admin access required.'}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Owner Access Admin Users API",
+    "expected": "403 Forbidden",
+    "actual": "403 {'error': 'Admin access required.'}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Admin Access Admin Users API",
+    "expected": "200 OK + User List",
+    "actual": "200 OK (20 users)",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Customer Access Owner Earnings API",
+    "expected": "403 Forbidden",
+    "actual": "403 {'error': 'Only owners can access earnings breakdown.'}",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Owner Access Owner Earnings API",
+    "expected": "200 OK with Gross & Net breakdown",
+    "actual": "200 Gross: ₹200120.0, Net: ₹180108.0",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 17",
+    "feature": "Role Security",
+    "test": "Customer Attempts Booking Approval",
+    "expected": "403 Forbidden",
+    "actual": "403 Only owner or admin can approve bookings.",
+    "status": "✅ PASS",
+    "is_pass": true
+  },
+  {
+    "phase": "PHASE 21",
+    "feature": "Database Integrity",
+    "test": "Models & Foreign Key Relationships",
+    "expected": "Active relational integrity without broken records",
+    "actual": "Users: 20, Tractors: 13, Bookings: 86, Payments: 14, Reviews: 35",
+    "status": "✅ PASS",
+    "is_pass": true
+  }
+]

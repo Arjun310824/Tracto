@@ -33,10 +33,17 @@ def calculate_ai_machinery_recommendation(crop_type, field_size_acres, soil_type
     """
     AI Matcher Engine: Matches tractors & implements to agricultural needs.
     """
-    field_acres = float(field_size_acres or 5.0)
-    crop = CROP_PROFILES.get(crop_type.lower(), CROP_PROFILES["general"])
-    task = TASK_PROFILES.get(task_purpose.lower(), TASK_PROFILES["plowing"])
-    soil_mult = SOIL_FACTORS.get(soil_type.lower(), 1.0)
+    try:
+        field_acres = float(field_size_acres)
+        if field_acres <= 0:
+            field_acres = 5.0
+    except (ValueError, TypeError):
+        field_acres = 5.0
+
+    crop = CROP_PROFILES.get(str(crop_type or 'general').lower(), CROP_PROFILES["general"])
+    task = TASK_PROFILES.get(str(task_purpose or 'plowing').lower(), TASK_PROFILES["plowing"])
+    soil_mult = SOIL_FACTORS.get(str(soil_type or 'medium').lower(), 1.0)
+
 
     # Required HP calculation logic
     target_hp = crop["base_hp"] * task["hp_multiplier"] * soil_mult

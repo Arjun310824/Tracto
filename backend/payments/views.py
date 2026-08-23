@@ -25,8 +25,9 @@ class CreateOrderAPIView(views.APIView):
         except Booking.DoesNotExist:
             return Response({"error": "Booking not found or access denied"}, status=status.HTTP_404_NOT_FOUND)
 
-        if booking.status not in ["approved", "pending"]:
+        if booking.status not in ["pending", "approved", "arrived", "in_progress"]:
             return Response({"error": f"Cannot initiate payment for booking with status '{booking.status}'"}, status=status.HTTP_400_BAD_REQUEST)
+
 
         amount_in_paise = int(booking.total_amount * 100)
 
@@ -103,12 +104,12 @@ class VerifyPaymentAPIView(views.APIView):
         booking.status = "paid"
         booking.save()
 
-        farmer_phone = booking.customer.phone or "+91 98765 43210"
+        farmer_phone = booking.customer.phone or "N/A"
 
-        # Send Notifications & SMS
+        # Send In-App Notifications
         notify_user(
             user=booking.customer,
-            title=f"📱 SMS to {farmer_phone}: Work Completion OTP is {booking.completion_otp}",
+            title=f"Work Completion OTP: {booking.completion_otp} 🔒",
             message=f"Payment of ₹{payment.amount} for Booking TRC{booking.id:05d} was successful! Your confidential Work Completion OTP is {booking.completion_otp}. Give this OTP to the tractor driver ONLY after your field work is 100% complete.",
             notification_type="payment_success"
         )

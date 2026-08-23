@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle, FaRobot, FaGlobe } from "react-icons/fa";
+import { FaTractor, FaHeart, FaBell, FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaPlusCircle, FaRobot, FaGlobe, FaVolumeUp } from "react-icons/fa";
 import { useLanguage } from "../context/LanguageContext";
+import { playIncomingRideAlert, playNotificationChime } from "../utils/audioAlert";
 import api from "../api/axios";
-
 
 function Navbar() {
   const navigate = useNavigate();
@@ -26,17 +26,34 @@ function Navbar() {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const prevCountRef = useRef(0);
 
   useEffect(() => {
     if (user) {
       fetchNotifications();
+      // Poll notifications every 10 seconds for real-time sound alerts
+      const interval = setInterval(() => {
+        fetchNotifications(true);
+      }, 10000);
+      return () => clearInterval(interval);
     }
   }, [user?.id, location.pathname]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (isPolling = false) => {
     try {
       const countRes = await api.get("notifications/unread-count/");
-      setUnreadCount(countRes.data.unread_count || 0);
+      const newCount = countRes.data.unread_count || 0;
+
+      // Play audio alert if new notification arrived during polling
+      if (isPolling && newCount > prevCountRef.current) {
+        if (user?.role === "owner") {
+          playIncomingRideAlert();
+        } else {
+          playNotificationChime();
+        }
+      }
+      prevCountRef.current = newCount;
+      setUnreadCount(newCount);
 
       const listRes = await api.get("notifications/");
       setNotifications(listRes.data.results || listRes.data || []);
@@ -44,6 +61,7 @@ function Navbar() {
       console.error("Error fetching notifications:", err);
     }
   };
+
 
   const handleMarkAllRead = async () => {
     try {
@@ -80,23 +98,27 @@ function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-2">
-            <li className="nav-item">
-              <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
-                {t("exploreTractors")}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
-                <FaRobot /> {t("aiAdvisor")}
-              </Link>
-            </li>
-
-            {user && user.role === "customer" && (
-              <li className="nav-item">
-                <Link className={`nav-link text-light fw-medium d-flex align-items-center gap-1 ${location.pathname === "/favorites" ? "active text-danger fw-bold" : ""}`} to="/favorites">
-                  <FaHeart className="text-danger" /> {t("wishlist")}
-                </Link>
-              </li>
+            {/* Customer & Guest Links: Explore Tractors & AI Advisor */}
+            {(!user || user.role === "customer") && (
+              <>
+                <li className="nav-item">
+                  <Link className={`nav-link text-light fw-medium ${location.pathname === "/tractors" ? "active text-success fw-bold" : ""}`} to="/tractors">
+                    {t("exploreTractors")}
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={`nav-link text-warning fw-bold d-flex align-items-center gap-1 ${location.pathname === "/ai-advisor" ? "active text-warning fw-bold border-bottom border-warning" : ""}`} to="/ai-advisor">
+                    <FaRobot /> {t("aiAdvisor")}
+                  </Link>
+                </li>
+                {user && user.role === "customer" && (
+                  <li className="nav-item">
+                    <Link className={`nav-link text-light fw-medium d-flex align-items-center gap-1 ${location.pathname === "/favorites" ? "active text-danger fw-bold" : ""}`} to="/favorites">
+                      <FaHeart className="text-danger" /> {t("wishlist")}
+                    </Link>
+                  </li>
+                )}
+              </>
             )}
           </ul>
 
@@ -192,13 +214,24 @@ function Navbar() {
                   {showNotifMenu && (
                     <div className="position-absolute end-0 mt-2 bg-white text-dark shadow-lg rounded-3 border p-0 z-3" style={{ width: "320px", maxHeight: "400px", overflowY: "auto" }}>
                       <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
-                        <h6 className="mb-0 fw-bold">Notifications</h6>
+                        <div className="d-flex align-items-center gap-1.5">
+                          <h6 className="mb-0 fw-bold">Notifications</h6>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm p-1 rounded-circle border-0"
+                            onClick={() => (user?.role === "owner" ? playIncomingRideAlert() : playNotificationChime())}
+                            title="🔊 Test Sound Alert"
+                          >
+                            <FaVolumeUp className="text-success fs-6" />
+                          </button>
+                        </div>
                         {unreadCount > 0 && (
                           <button className="btn btn-link btn-sm p-0 text-success text-decoration-none" onClick={handleMarkAllRead}>
                             Mark all as read
                           </button>
                         )}
                       </div>
+
                       <div className="list-group list-group-flush">
                         {notifications.length === 0 ? (
                           <div className="p-3 text-center text-muted small">No notifications yet.</div>
@@ -218,19 +251,7 @@ function Navbar() {
                   )}
                 </div>
 
-                {/* Quick Dashboard Action */}
-                <Link
-                  to={user.role === "owner" ? "/owner-dashboard" : user.role === "admin" ? "/admin-dashboard" : "/customer-dashboard"}
-                  className="btn btn-sm btn-outline-success text-white border-success rounded-pill d-flex align-items-center gap-1"
-                >
-                  <FaTachometerAlt /> Dashboard
-                </Link>
 
-                {user.role === "owner" && (
-                  <Link to="/add-tractor" className="btn btn-sm btn-success rounded-pill d-flex align-items-center gap-1">
-                    <FaPlusCircle /> Add Tractor
-                  </Link>
-                )}
 
                 {/* Profile Dropdown */}
                 <div className="position-relative">

@@ -57,16 +57,17 @@ function AdminReports() {
             {/* Fleet Brand & Engine Utilization Row */}
             <div className="row g-4 mb-4">
               <div className="col-lg-6">
-                <FleetDistributionChart />
+                <FleetDistributionChart data={stats?.brand_distribution} />
               </div>
               <div className="col-lg-6">
                 <EngineMeterMetricsChart
                   totalHours={stats?.total_meter_hours || 184.2}
-                  activeTrips={stats?.active_bookings || 6}
-                  completedTrips={stats?.total_bookings || 19}
+                  activeTrips={stats?.active_bookings || 0}
+                  completedTrips={stats?.completed_bookings || 0}
                 />
               </div>
             </div>
+
 
 
             {/* 4 Analytics Grid Cards */}

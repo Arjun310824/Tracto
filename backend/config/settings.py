@@ -172,4 +172,10 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_mockkey123")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "mocksecret123456789")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "mocksecret123456789")
+
+# Real SMS Gateway Configurations (Fast2SMS for India / Twilio Global)
+FAST2SMS_API_KEY = os.getenv("FAST2SMS_API_KEY", "")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")

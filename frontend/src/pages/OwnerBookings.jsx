@@ -14,33 +14,6 @@ function OwnerBookings() {
   const [otpInputs, setOtpInputs] = useState({});
   const [verifyingOtpId, setVerifyingOtpId] = useState(null);
 
-  useEffect(() => {
-    fetchOwnerBookings();
-  }, []);
-
-  const fetchOwnerBookings = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("bookings/");
-      const data = res.data.results || res.data || [];
-      setBookings(data);
-
-      // Initialize meter inputs state
-      const initialMeters = {};
-      data.forEach((b) => {
-        initialMeters[b.id] = {
-          start: b.start_meter_hours || 0,
-          end: b.end_meter_hours || 0,
-        };
-      });
-      setMeterInputs(initialMeters);
-    } catch (err) {
-      console.error("Error loading owner bookings:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleVerifyOtp = async (bookingId) => {
     const otpCode = otpInputs[bookingId] || "";
     if (!otpCode || otpCode.length < 4) {
@@ -306,21 +279,22 @@ function OwnerBookings() {
 
 
 
-                      {/* Farmer Completion OTP Verification */}
+                      {/* In-App Work Completion OTP Verification */}
                       {['approved', 'arrived', 'in_progress', 'paid'].includes(b.status) && (
                         <div className="bg-warning-subtle p-3 rounded-4 border border-warning mb-3">
                           <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
-                            🔒 Enter Farmer's Completion OTP to Finish Work
+                            🔒 Enter Farmer's Work Completion OTP to Finish Work (કામ પૂર્ણ કરવા ખેડૂતનો OTP દાખલ કરો)
                           </div>
                           <div className="text-muted mb-2" style={{ fontSize: "0.75rem" }}>
-                            Ask the farmer for their 4-digit Completion OTP when farm work is complete to officially mark this rental as Completed!
+                            Ask the farmer for the 4-digit Security OTP displayed on their screen when farm work is 100% complete to officially close this rental!
                           </div>
 
-                          <div className="d-flex gap-2 align-items-center" style={{ maxWidth: 360 }}>
+                          <div className="d-flex gap-2 align-items-center flex-wrap" style={{ maxWidth: 460 }}>
                             <input
                               type="text"
                               maxLength="6"
                               className="form-control form-control-sm font-monospace fw-extrabold text-center fs-6 rounded-3 border-warning"
+                              style={{ width: 130 }}
                               placeholder="e.g. 4892"
                               value={otpInputs[b.id] || ""}
                               onChange={(e) => setOtpInputs({ ...otpInputs, [b.id]: e.target.value })}

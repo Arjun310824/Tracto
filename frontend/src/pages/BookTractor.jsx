@@ -75,9 +75,9 @@ function BookTractor() {
 
   const handleToggleImplement = (implId) => {
     if (selectedImplementIds.includes(implId)) {
-      setSelectedImplementIds(selectedImplementIds.filter((i) => i !== implId));
+      setSelectedImplementIds([]); // Deselect if already selected
     } else {
-      setSelectedImplementIds([...selectedImplementIds, implId]);
+      setSelectedImplementIds([implId]); // Only allow 1 implement at a time (physically 1 implement per tractor)
     }
   };
 
@@ -135,21 +135,95 @@ function BookTractor() {
   }, [startDate, endDate, durationMode, hourlyUnits, tractor, selectedImplementIds, implementsList, existingBookings]);
 
 
+  const getFilteredImplements = () => {
+    if (!implementsList || implementsList.length === 0) return [];
+
+    return implementsList.filter((impl) => {
+      const name = (impl.name || "").toLowerCase();
+      const desc = (impl.description || "").toLowerCase();
+      const cat = (impl.category || "").toLowerCase();
+
+      switch (farmingWorkType) {
+        case "plowing": // ખેડવા માટે (Cultivator, Plough, Harrow, Chisel)
+          return (
+            cat === "cultivator" ||
+            name.includes("plough") ||
+            name.includes("cultivator") ||
+            name.includes("plow") ||
+            name.includes("harrow") ||
+            desc.includes("cultivator") ||
+            desc.includes("plough")
+          );
+        case "rotavator": // રોટાવેટર (Rotavator, Rotary tiller)
+          return (
+            cat === "rotavator" ||
+            name.includes("rotavator") ||
+            name.includes("rotary") ||
+            name.includes("tiller") ||
+            desc.includes("rotavator")
+          );
+        case "sowing": // વાવણી (Seed drill, Seeder, Planter)
+          return (
+            cat === "seeder" ||
+            name.includes("drill") ||
+            name.includes("seeder") ||
+            name.includes("sow") ||
+            name.includes("planter") ||
+            desc.includes("seed")
+          );
+        case "transport": // પાક ટ્રાન્સપોર્ટ (Trolley, Trailer)
+          return (
+            cat === "trailer" ||
+            name.includes("trailer") ||
+            name.includes("trolley") ||
+            name.includes("tipping") ||
+            desc.includes("trailer") ||
+            desc.includes("trolley")
+          );
+        case "leveling": // લેવલિંગ (Land Leveler, Laser Leveler)
+          return (
+            cat === "leveler" ||
+            name.includes("leveler") ||
+            name.includes("level") ||
+            name.includes("laser") ||
+            desc.includes("leveler")
+          );
+        case "harvesting": // કાપણી / થ્રેશર (Thresher, Harvester, Reaper)
+          return (
+            cat === "harvester" ||
+            name.includes("thresher") ||
+            name.includes("harvester") ||
+            name.includes("reaper") ||
+            desc.includes("thresher")
+          );
+        default:
+          return true;
+      }
+    });
+  };
+
   const handleSelectWorkType = (typeId) => {
     setFarmingWorkType(typeId);
     if (!implementsList || implementsList.length === 0) return;
 
-    let keyword = "";
-    if (typeId === "transport") keyword = "trolley";
-    else if (typeId === "rotavator") keyword = "rotavator";
-    else if (typeId === "sowing") keyword = "drill";
-    else if (typeId === "plowing") keyword = "plough";
-    else if (typeId === "harvesting") keyword = "thresher";
-    else if (typeId === "leveling") keyword = "leveler";
+    const matching = implementsList.filter((impl) => {
+      const name = (impl.name || "").toLowerCase();
+      const desc = (impl.description || "").toLowerCase();
+      const cat = (impl.category || "").toLowerCase();
 
-    const matched = implementsList.find((imp) => imp.name?.toLowerCase().includes(keyword) || imp.description?.toLowerCase().includes(keyword));
-    if (matched && !selectedImplementIds.includes(matched.id)) {
-      setSelectedImplementIds([...selectedImplementIds, matched.id]);
+      if (typeId === "plowing") return cat === "cultivator" || name.includes("plough") || name.includes("cultivator") || name.includes("plow") || name.includes("harrow") || desc.includes("cultivator") || desc.includes("plough");
+      if (typeId === "rotavator") return cat === "rotavator" || name.includes("rotavator") || name.includes("rotary") || name.includes("tiller") || desc.includes("rotavator");
+      if (typeId === "sowing") return cat === "seeder" || name.includes("drill") || name.includes("seeder") || name.includes("sow") || name.includes("planter") || desc.includes("seed");
+      if (typeId === "transport") return cat === "trailer" || name.includes("trailer") || name.includes("trolley") || name.includes("tipping") || desc.includes("trailer");
+      if (typeId === "leveling") return cat === "leveler" || name.includes("leveler") || name.includes("level") || name.includes("laser") || desc.includes("leveler");
+      if (typeId === "harvesting") return cat === "harvester" || name.includes("thresher") || name.includes("harvester") || name.includes("reaper") || desc.includes("thresher");
+      return true;
+    });
+
+    if (matching.length > 0) {
+      setSelectedImplementIds([matching[0].id]);
+    } else {
+      setSelectedImplementIds([]);
     }
   };
 
@@ -477,42 +551,93 @@ function BookTractor() {
                   </div>
                 )}
 
-                {/* Implement & Attachment Add-ons */}
-                {implementsList.length > 0 && (
-                  <div className="mb-4 bg-light p-3 rounded-3 border">
-                    <h6 className="fw-bold text-dark mb-2.5 d-flex align-items-center gap-2">
-                      <FaCogs className="text-success" /> Select Equipment / Implement Attachments (Optional Add-ons)
-                    </h6>
-                    <div className="d-flex flex-column gap-2">
-                      {implementsList.map((impl) => {
-                        const isChecked = selectedImplementIds.includes(impl.id);
-                        const rateStr = durationMode === "daily" ? `+₹${impl.rent_per_day}/day` : `+₹${impl.rent_per_hour}/hr`;
-                        return (
-                          <div
-                            key={impl.id}
-                            className={`p-2.5 rounded border d-flex justify-content-between align-items-center cursor-pointer ${isChecked ? "bg-success-subtle border-success" : "bg-white"}`}
-                            onClick={() => handleToggleImplement(impl.id)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <div className="d-flex align-items-center gap-2">
-                              <input
-                                type="checkbox"
-                                className="form-check-input mt-0"
-                                checked={isChecked}
-                                onChange={() => handleToggleImplement(impl.id)}
-                              />
-                              <div>
-                                <div className="fw-bold text-dark small">{impl.name}</div>
-                                <div className="text-muted" style={{ fontSize: "0.75rem" }}>{impl.description}</div>
-                              </div>
+                {/* Implement & Attachment Add-on (Filtered dynamically by Selected Farming Work) */}
+                {implementsList.length > 0 && (() => {
+                  const filteredImplements = getFilteredImplements();
+                  const workTypeLabels = {
+                    plowing: "જમીન ખેડવા / ખેડાણ (Plowing)",
+                    rotavator: "રોટાવેટર (Rotavator)",
+                    sowing: "વાવણી (Seed Sowing)",
+                    transport: "પાક ટ્રાન્સપોર્ટ (Trolley / Transport)",
+                    harvesting: "કાપણી / થ્રેશર (Harvesting)",
+                    leveling: "લેવલિંગ (Land Leveler)",
+                  };
+
+                  return (
+                    <div className="mb-4 bg-light p-3 rounded-3 border">
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                          <FaCogs className="text-success" /> સાધન પસંદ કરો (Matching Equipment Attachment)
+                        </h6>
+                        <span className="badge bg-success-subtle text-success border border-success-subtle small" style={{ fontSize: "0.72rem" }}>
+                          ✓ {workTypeLabels[farmingWorkType] || "ખેતીકામ"} માટે યોગ્ય સાધનો
+                        </span>
+                      </div>
+                      <p className="text-muted small mb-2.5" style={{ fontSize: "0.78rem" }}>
+                        તમે પસંદ કરેલા ખેતીકામ (<strong>{workTypeLabels[farmingWorkType]}</strong>) મુજબના જ સાધનો અહીં દર્શાવવામાં આવ્યા છે.
+                      </p>
+
+                      <div className="d-flex flex-column gap-2">
+                        {/* No Attachment Option */}
+                        <div
+                          className={`p-2.5 rounded border d-flex justify-content-between align-items-center cursor-pointer ${selectedImplementIds.length === 0 ? "bg-success-subtle border-success shadow-sm" : "bg-white"}`}
+                          onClick={() => setSelectedImplementIds([])}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <input
+                              type="radio"
+                              name="selectedImplementRadio"
+                              className="form-check-input mt-0"
+                              checked={selectedImplementIds.length === 0}
+                              onChange={() => setSelectedImplementIds([])}
+                            />
+                            <div>
+                              <div className="fw-bold text-dark small">ફક્ત ટ્રેક્ટર (Only Tractor - No Attachment)</div>
+                              <div className="text-muted" style={{ fontSize: "0.75rem" }}>માત્ર ટ્રેક્ટર જોઈએ છે (Zero Extra Charges)</div>
                             </div>
-                            <span className="badge bg-success text-white fw-semibold">{rateStr}</span>
                           </div>
-                        );
-                      })}
+                          <span className="badge bg-secondary-subtle text-dark fw-semibold">₹0 Extra</span>
+                        </div>
+
+                        {/* Filtered Implement List */}
+                        {filteredImplements.length > 0 ? (
+                          filteredImplements.map((impl) => {
+                            const isChecked = selectedImplementIds.includes(impl.id);
+                            const rateStr = durationMode === "daily" ? `+₹${impl.rent_per_day}/day` : `+₹${impl.rent_per_hour}/hr`;
+                            return (
+                              <div
+                                key={impl.id}
+                                className={`p-2.5 rounded border d-flex justify-content-between align-items-center cursor-pointer ${isChecked ? "bg-success-subtle border-success shadow-sm" : "bg-white"}`}
+                                onClick={() => handleToggleImplement(impl.id)}
+                                style={{ cursor: "pointer" }}
+                              >
+                                <div className="d-flex align-items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="selectedImplementRadio"
+                                    className="form-check-input mt-0"
+                                    checked={isChecked}
+                                    onChange={() => handleToggleImplement(impl.id)}
+                                  />
+                                  <div>
+                                    <div className="fw-bold text-dark small">{impl.name}</div>
+                                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>{impl.description}</div>
+                                  </div>
+                                </div>
+                                <span className="badge bg-success text-white fw-semibold">{rateStr}</span>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-muted small p-2 bg-white rounded border text-center">
+                            આ ટ્રેક્ટર પાસે આ કામ માટેનું વધારાનું સાધન નથી. તમે ફક્ત ટ્રેક્ટર બુક કરી શકો છો.
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Delivery & Dispatch Options (Uber / Rapido Style) */}
                 <div className="mb-3 bg-light p-3 rounded-3 border">
