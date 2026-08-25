@@ -137,7 +137,8 @@ class BookingViewSet(viewsets.ModelViewSet):
             return Response({"error": "Only owner or admin can confirm payment."}, status=status.HTTP_403_FORBIDDEN)
 
         import random
-        booking.completion_otp = f"{random.randint(1000, 9999)}"
+        if not booking.completion_otp:
+            booking.completion_otp = f"{random.randint(1000, 9999)}"
         booking.status = "paid"
         booking.save()
 

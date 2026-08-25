@@ -1,0 +1,67 @@
+name: TRACTO AI Continuous Testing & CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # -------------------------------------------------------------
+  # Job 1: Backend Unit Testing & AI Static Analysis
+  # -------------------------------------------------------------
+  backend-quality-and-tests:
+    name: 🐍 Django Unit Tests & AI Code Quality Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Install Backend Dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Run AI Code Quality & Bug Detection Analyzer
+        working-directory: ./backend
+        run: |
+          python ai_code_analyzer.py
+
+      - name: 🧪 Run Automated Django Unit & Integration Tests
+        working-directory: ./backend
+        run: |
+          python manage.py test accounts rental bookings
+
+  # -------------------------------------------------------------
+  # Job 2: Frontend Build Verification & Asset Bundling
+  # -------------------------------------------------------------
+  frontend-build-and-lint:
+    name: ⚛️ React Vite Production Build & Asset Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: 📦 Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🏗️ Verify Vite Production Bundle Compilation
+        working-directory: ./frontend
+        run: npm run build
