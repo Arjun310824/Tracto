@@ -128,6 +128,7 @@ def calculate_ai_machinery_recommendation(crop_type, field_size_acres, soil_type
 
     # Sort by match score descending
     recommendations.sort(key=lambda x: x["match_score"], reverse=True)
+    top_match = recommendations[0] if recommendations else None
 
     return {
         "crop": crop["name"],
@@ -135,8 +136,14 @@ def calculate_ai_machinery_recommendation(crop_type, field_size_acres, soil_type
         "soil_type": soil_type,
         "task_purpose": task["name"],
         "target_hp": round(target_hp),
+        "recommended_hp": round(target_hp),
+        "estimated_hours": top_match["estimated_hours"] if top_match else round(field_acres * 1.4, 1),
+        "estimated_fuel_liters": top_match["estimated_fuel_liters"] if top_match else round(field_acres * 9.5, 1),
+        "estimated_cost": top_match["estimated_total_cost"] if top_match else round(field_acres * 550, 2),
+        "advice": top_match["reason_en"] if top_match else "Matched tractors based on soil and crop power requirements.",
         "total_results": len(recommendations),
-        "recommendations": recommendations[:6]  # Top 6 AI matches
+        "recommendations": recommendations[:6],  # Top 6 AI matches
+        "matched_tractors": recommendations[:6],  # Alias for direct tractors recommendation
     }
 
 
