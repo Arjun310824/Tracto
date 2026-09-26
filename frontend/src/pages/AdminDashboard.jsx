@@ -1,13 +1,23 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FaUsers, FaUserCheck, FaTractor, FaBookmark, FaRupeeSign, FaChartBar, FaShieldAlt, FaBan, FaCheckCircle } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaUsers,
+  FaUserCheck,
+  FaTractor,
+  FaBookmark,
+  FaRupeeSign,
+  FaShieldAlt,
+} from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { RevenueTrendChart } from "../components/AnalyticsCharts";
-
+import { StatCard } from "../components/ui/StatCard";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,116 +38,129 @@ function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status"></div>
+        <div className="text-center py-5 my-auto">
+          <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+          <p className="text-muted small mt-3">Loading system analytics...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container-fluid">
+      <div className="container-fluid flex-grow-1">
         <div className="row">
-          <div className="col-lg-3 col-xl-2 p-0 d-none d-lg-block">
+          {/* Responsive Sidebar for Mobile & Desktop */}
+          <div className="col-12 col-lg-3 col-xl-2 p-0">
             <Sidebar />
           </div>
 
-          <div className="col-lg-9 col-xl-10 p-4">
-            <div className="mb-4">
-              <h2 className="fw-extrabold text-dark m-0">Admin Overview & System Stats</h2>
-              <p className="text-muted small">Monitor platform performance, user registrations, and tractor listings</p>
+          <div className="col-12 col-lg-9 col-xl-10 p-3 p-md-4">
+            <div className="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <h1 className="h3 fw-extrabold text-dark m-0 font-heading d-flex align-items-center gap-2">
+                  <FaShieldAlt className="text-danger" /> Admin Command Center
+                </h1>
+                <p className="text-muted small m-0 mt-0.5">
+                  Platform oversight, user verification, equipment approvals, and revenue analytics
+                </p>
+              </div>
+
+              <div className="d-flex align-items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => navigate("/admin-tractors")}>
+                  Tractor Approvals
+                </Button>
+                <Button variant="primary" size="sm" onClick={() => navigate("/admin-users")}>
+                  Manage Users
+                </Button>
+              </div>
             </div>
 
-            {/* KPI Overview Cards */}
+            {/* Platform Key Metrics Row */}
             <div className="row g-3 mb-4">
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-primary-subtle text-primary p-2.5 rounded-circle fs-5">
-                    <FaUsers />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-bold text-dark">{stats?.total_users || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Total Users</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Total Users"
+                  value={stats?.total_users || 0}
+                  icon={<FaUsers />}
+                  variant="default"
+                  onClick={() => navigate("/admin-users")}
+                />
               </div>
 
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-warning-subtle text-warning p-2.5 rounded-circle fs-5">
-                    <FaUserCheck />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-bold text-dark">{stats?.total_owners || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Registered Owners</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Owners"
+                  value={stats?.total_owners || 0}
+                  icon={<FaUserCheck />}
+                  variant="warning"
+                  onClick={() => navigate("/admin-users")}
+                />
               </div>
 
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-info-subtle text-info p-2.5 rounded-circle fs-5">
-                    <FaUsers />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-bold text-dark">{stats?.total_customers || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Customers</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Farmers"
+                  value={stats?.total_customers || 0}
+                  icon={<FaUsers />}
+                  variant="info"
+                  onClick={() => navigate("/admin-users")}
+                />
               </div>
 
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-success-subtle text-success p-2.5 rounded-circle fs-5">
-                    <FaTractor />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-bold text-dark">{stats?.total_tractors || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Total Tractors</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Fleet Tractors"
+                  value={stats?.total_tractors || 0}
+                  icon={<FaTractor />}
+                  variant="success"
+                  onClick={() => navigate("/admin-tractors")}
+                />
               </div>
 
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-secondary-subtle text-secondary p-2.5 rounded-circle fs-5">
-                    <FaBookmark />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-bold text-dark">{stats?.total_bookings || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Bookings Count</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Total Bookings"
+                  value={stats?.total_bookings || 0}
+                  icon={<FaBookmark />}
+                  variant="default"
+                  onClick={() => navigate("/admin-bookings")}
+                />
               </div>
 
-              <div className="col-md-4 col-xl-2">
-                <div className="glass-card p-3 d-flex align-items-center gap-3">
-                  <div className="bg-emerald-subtle text-emerald p-2.5 rounded-circle fs-5 text-success">
-                    <FaRupeeSign />
-                  </div>
-                  <div>
-                    <div className="fs-4 fw-extrabold text-success">₹{stats?.total_revenue || 0}</div>
-                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>Total Revenue</div>
-                  </div>
-                </div>
+              <div className="col-6 col-md-4 col-xl-2">
+                <StatCard
+                  label="Gross Revenue"
+                  value={`₹${(stats?.total_revenue || 0).toLocaleString()}`}
+                  icon={<FaRupeeSign />}
+                  variant="accent"
+                  onClick={() => navigate("/admin-payments")}
+                />
               </div>
             </div>
 
             {/* Interactive Revenue & Growth Graph */}
-            <RevenueTrendChart data={stats?.monthly_data} title="Monthly Platform Revenue & Tractor Booking Velocity" />
+            <div className="bg-white rounded-4 border p-4 shadow-sm mb-4">
+              <RevenueTrendChart
+                data={stats?.monthly_data}
+                title="Monthly Platform Revenue & Tractor Booking Velocity"
+              />
+            </div>
 
-            {/* Quick Tables Grid */}
+            {/* Top Tractors & Active Owners */}
             <div className="row g-4 mb-4">
-
-              {/* Top Rented Tractors */}
-              <div className="col-lg-6">
-                <div className="glass-card p-4">
-                  <h5 className="fw-bold text-dark mb-3">Top Rented Tractors</h5>
+              <div className="col-12 col-lg-6">
+                <div className="bg-white rounded-4 border p-4 shadow-sm h-100">
+                  <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">Top Rented Tractors</h5>
+                    <Link to="/admin-tractors" className="text-success small fw-semibold text-decoration-none">
+                      View All
+                    </Link>
+                  </div>
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
                       <thead className="table-light">
@@ -145,16 +168,18 @@ function AdminDashboard() {
                           <th>Tractor</th>
                           <th>Brand</th>
                           <th>Rent / Day</th>
-                          <th>Bookings</th>
+                          <th className="text-end">Bookings</th>
                         </tr>
                       </thead>
                       <tbody>
                         {stats?.top_tractors?.map((t) => (
                           <tr key={t.id}>
                             <td className="fw-semibold text-dark">{t.name}</td>
-                            <td>{t.brand}</td>
-                            <td className="text-success fw-bold">₹{t.rent_per_day}</td>
-                            <td><span className="badge bg-success">{t.booking_count} times</span></td>
+                            <td><Badge variant="primary" size="sm">{t.brand}</Badge></td>
+                            <td className="text-success fw-bold font-monospace">₹{t.rent_per_day}</td>
+                            <td className="text-end">
+                              <Badge variant="success" size="sm">{t.booking_count} times</Badge>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -163,27 +188,33 @@ function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Active Owners */}
-              <div className="col-lg-6">
-                <div className="glass-card p-4">
-                  <h5 className="fw-bold text-dark mb-3">Top Active Owners</h5>
+              <div className="col-12 col-lg-6">
+                <div className="bg-white rounded-4 border p-4 shadow-sm h-100">
+                  <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">Top Active Owners</h5>
+                    <Link to="/admin-users" className="text-success small fw-semibold text-decoration-none">
+                      View Users
+                    </Link>
+                  </div>
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
                       <thead className="table-light">
                         <tr>
                           <th>Owner Name</th>
-                          <th>Email</th>
-                          <th>Phone</th>
-                          <th>Tractors Listed</th>
+                          <th>Contact</th>
+                          <th className="text-end">Tractors</th>
                         </tr>
                       </thead>
                       <tbody>
                         {stats?.top_owners?.map((o) => (
                           <tr key={o.id}>
-                            <td className="fw-semibold text-dark">{o.first_name} {o.last_name}</td>
-                            <td className="small">{o.email}</td>
-                            <td className="small">{o.phone || 'N/A'}</td>
-                            <td><span className="badge bg-primary">{o.tractor_count} Tractors</span></td>
+                            <td className="fw-semibold text-dark">
+                              {o.first_name} {o.last_name}
+                            </td>
+                            <td className="small text-muted">{o.phone || o.email}</td>
+                            <td className="text-end">
+                              <Badge variant="info" size="sm">{o.tractor_count} Tractors</Badge>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -193,17 +224,23 @@ function AdminDashboard() {
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="d-flex flex-wrap gap-3">
-              <Link to="/admin-users" className="btn btn-outline-primary rounded-pill px-4">
+            {/* Quick Navigation Action Strip */}
+            <div className="d-flex flex-wrap gap-2.5">
+              <Button variant="outline" onClick={() => navigate("/admin-users")}>
                 Manage All Users
-              </Link>
-              <Link to="/admin-tractors" className="btn btn-outline-success rounded-pill px-4">
-                Approve / Reject Tractor Listings
-              </Link>
-              <Link to="/admin-reports" className="btn btn-outline-warning text-dark rounded-pill px-4 fw-bold">
-                View Detailed Analytics & Revenue Charts
-              </Link>
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/admin-tractors")}>
+                Tractor Approvals
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/admin-bookings")}>
+                All Bookings
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/admin-payments")}>
+                Payments & Disputes
+              </Button>
+              <Button variant="primary" onClick={() => navigate("/admin-reports")}>
+                Platform Financial Reports & Analytics
+              </Button>
             </div>
           </div>
         </div>

@@ -72,33 +72,34 @@ Tracto/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started & Local Setup
 
-### Prerequisites
-- Node.js (v18+)
-- Python (v3.10+)
-- `pip` & `npm`
+For comprehensive step-by-step instructions, environment setup, and demo login credentials, refer to **[SETUP.md](SETUP.md)**.
 
-### 1. Backend Setup
-```bash
-cd backend
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
+### Quick Start
 
-pip install -r requirements.txt # or install django djangorestframework django-cors-headers python-dotenv
-python manage.py migrate
-python manage.py runserver
-```
+1. **Backend (Django):**
+   ```bash
+   cd backend
+   python -m venv venv
+   # On Windows: venv\Scripts\activate | On macOS/Linux: source venv/bin/activate
+   pip install -r requirements.txt
+   python manage.py migrate
+   python seed_demo_accounts.py  # Seeds demo farmers, owners, admins & tractors
+   python manage.py runserver
+   ```
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+2. **Frontend (React + Vite):**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. **Demo Accounts:**
+   - **Farmer:** `customer@tracto.com` / `customer123`
+   - **Owner:** `owner@tracto.com` / `owner123`
+   - **Admin:** `admin@tracto.com` / `admin123`
 
 ---
 

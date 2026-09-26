@@ -1,13 +1,34 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { FaStar, FaMapMarkerAlt, FaTachometerAlt, FaCog, FaCalendarAlt, FaGasPump, FaPhone, FaUserCheck, FaArrowLeft } from "react-icons/fa";
+import {
+  FaStar,
+  FaMapMarkerAlt,
+  FaTachometerAlt,
+  FaCog,
+  FaCalendarAlt,
+  FaGasPump,
+  FaPhone,
+  FaUserCheck,
+  FaArrowLeft,
+  FaCheckCircle,
+  FaTools,
+} from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { Modal } from "../components/ui/Modal";
 
 function TractorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  })();
 
   const [tractor, setTractor] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -35,10 +56,11 @@ function TractorDetails() {
 
   if (loading) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status"></div>
+        <div className="text-center py-5 my-auto">
+          <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+          <p className="text-muted small mt-3">Loading tractor details...</p>
         </div>
       </div>
     );
@@ -46,11 +68,14 @@ function TractorDetails() {
 
   if (!tractor) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="container py-5 text-center">
-          <h4 className="fw-bold">Tractor Not Found</h4>
-          <Link to="/tractors" className="btn btn-success rounded-pill px-4 mt-3">Back to Tractors</Link>
+        <div className="container py-5 text-center my-auto">
+          <h3 className="fw-bold font-heading">Tractor Not Found</h3>
+          <p className="text-muted">The requested equipment listing could not be found or has been unlisted.</p>
+          <Button variant="primary" onClick={() => navigate("/tractors")} icon={<FaArrowLeft />}>
+            Back to Fleet Catalog
+          </Button>
         </div>
       </div>
     );
@@ -58,7 +83,11 @@ function TractorDetails() {
 
   const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/").replace(/\/api\/?$/, "");
   const defaultImg = `${BACKEND_BASE}/media/tractors/mahindra_gen.png`;
-  const mainImage = tractor.image ? (tractor.image.startsWith("http") ? tractor.image : `${BACKEND_BASE}${tractor.image}`) : defaultImg;
+  const mainImage = tractor.image
+    ? tractor.image.startsWith("http")
+      ? tractor.image
+      : `${BACKEND_BASE}${tractor.image}`
+    : defaultImg;
 
   const galleryImages = [mainImage];
   if (tractor.additional_images && tractor.additional_images.length > 0) {
@@ -68,115 +97,114 @@ function TractorDetails() {
     });
   }
 
-
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container py-4">
-        <Link to="/tractors" className="btn btn-outline-secondary btn-sm rounded-pill mb-3 d-inline-flex align-items-center gap-1">
-          <FaArrowLeft /> Back to Tractors
-        </Link>
+      <main className="container py-4 flex-grow-1">
+        {/* Navigation Breadcrumb / Back button */}
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/tractors")}
+            icon={<FaArrowLeft />}
+          >
+            Back to Catalog
+          </Button>
+        </div>
 
         <div className="row g-4">
-          {/* Main Content & Gallery */}
-          <div className="col-lg-8">
-            <div className="card glass-card border-0 overflow-hidden mb-4">
-              {/* Active Main Gallery Display */}
-              <div className="position-relative cursor-pointer" onClick={() => setShowImageModal(true)} title="Click to view full photo">
+          {/* Main Details & Gallery */}
+          <div className="col-12 col-lg-8">
+            <div className="bg-white rounded-4 border overflow-hidden shadow-sm mb-4">
+              {/* Main Photo Gallery */}
+              <div
+                className="position-relative cursor-pointer overflow-hidden"
+                onClick={() => setShowImageModal(true)}
+                title="Click to view full photo"
+                style={{ cursor: "pointer" }}
+              >
                 <img
                   src={galleryImages[activeImgIndex] || mainImage}
                   alt={tractor.name}
-                  className="w-100 cursor-pointer"
-                  style={{ height: 420, objectFit: "cover", cursor: "pointer" }}
-                  onError={(e) => { e.target.src = defaultImg; }}
+                  className="w-100"
+                  style={{ maxHeight: 440, objectFit: "cover" }}
+                  onError={(e) => {
+                    e.target.src = defaultImg;
+                  }}
                 />
-                <span className="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white small px-3 py-1 m-3 rounded-pill fw-semibold">
-                  🔍 Click for Fullscreen Photo
+                <span className="position-absolute bottom-3 end-3 bg-dark bg-opacity-75 text-white small px-3 py-1.5 rounded-pill fw-semibold backdrop-blur shadow-sm">
+                  🔍 Click for Fullscreen
                 </span>
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails Ribbon */}
               {galleryImages.length > 1 && (
-                <div className="d-flex gap-2 p-3 bg-dark overflow-auto">
+                <div className="d-flex gap-2 p-3 bg-slate-900 bg-dark overflow-auto">
                   {galleryImages.map((imgUrl, idx) => (
                     <img
                       key={idx}
                       src={imgUrl}
-                      alt="Thumbnail"
-                      className={`rounded cursor-pointer ${activeImgIndex === idx ? "border border-3 border-success" : "opacity-75"}`}
-                      style={{ width: 80, height: 60, objectFit: "cover", cursor: "pointer" }}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className={`rounded cursor-pointer transition-all ${
+                        activeImgIndex === idx ? "border border-3 border-success opacity-100" : "opacity-60"
+                      }`}
+                      style={{ width: 84, height: 60, objectFit: "cover", cursor: "pointer", flexShrink: 0 }}
                       onClick={() => setActiveImgIndex(idx)}
                     />
                   ))}
                 </div>
               )}
 
-              {/* Fullscreen Photo Lightbox Modal */}
-              {showImageModal && (
-                <div
-                  className="modal show d-block z-3"
-                  style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
-                  onClick={() => setShowImageModal(false)}
-                >
-                  <div className="modal-dialog modal-dialog-centered modal-xl">
-                    <div className="modal-content bg-transparent border-0 text-center">
-                      <div className="d-flex justify-content-end p-2">
-                        <button type="button" className="btn-close btn-close-white fs-4" onClick={() => setShowImageModal(false)}></button>
-                      </div>
-                      <img
-                        src={galleryImages[activeImgIndex] || mainImage}
-                        alt={tractor.name}
-                        className="img-fluid rounded-3 shadow-lg mx-auto"
-                        style={{ maxHeight: "80vh", objectFit: "contain" }}
-                      />
-                      <div className="text-white mt-3 fw-bold fs-5">{tractor.name} ({tractor.brand})</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="card-body p-4">
-                <div className="d-flex justify-content-between align-items-start mb-2">
+              {/* Vehicle Title & Badges */}
+              <div className="p-4">
+                <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                   <div>
-                    <span className="badge bg-success-subtle text-success fw-bold me-2 px-2.5 py-1">{tractor.brand}</span>
-                    <span className="badge bg-light text-dark border fw-normal">{tractor.model}</span>
-                    <h2 className="fw-extrabold text-dark mt-2 mb-1">{tractor.name}</h2>
-                    <p className="text-muted small m-0 d-flex align-items-center gap-1.5 flex-wrap">
-                      <FaMapMarkerAlt className="text-danger" /> 
-                      <span className="fw-semibold text-dark">{tractor.location}</span>
-                      {tractor.city_village && <span className="badge bg-light text-secondary border">Village: {tractor.city_village}</span>}
-                      {tractor.district && <span className="badge bg-light text-secondary border">District: {tractor.district}</span>}
-                      {tractor.state && <span className="badge bg-light text-secondary border">State: {tractor.state}</span>}
-                      {tractor.pincode && <span className="badge bg-light text-secondary border">PIN: {tractor.pincode}</span>}
-                    </p>
-                    <div className="mt-2">
+                    <div className="d-flex align-items-center gap-2 mb-1.5">
+                      <Badge variant="primary">{tractor.brand}</Badge>
+                      <Badge variant="neutral">{tractor.model}</Badge>
+                      {tractor.is_available === false && <Badge variant="danger">Currently Booked</Badge>}
+                    </div>
+                    <h1 className="h2 fw-extrabold text-dark m-0 font-heading">{tractor.name}</h1>
+                    <div className="text-muted small mt-2 d-flex align-items-center gap-2 flex-wrap">
+                      <span className="d-flex align-items-center gap-1 text-dark fw-semibold">
+                        <FaMapMarkerAlt className="text-danger" /> {tractor.location}
+                      </span>
+                      {tractor.city_village && <Badge variant="neutral">Village: {tractor.city_village}</Badge>}
+                      {tractor.district && <Badge variant="neutral">District: {tractor.district}</Badge>}
+                      {tractor.state && <Badge variant="neutral">State: {tractor.state}</Badge>}
+                      {tractor.pincode && <Badge variant="neutral">PIN: {tractor.pincode}</Badge>}
+                    </div>
+
+                    <div className="mt-2.5">
                       <a
-                        href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(`${tractor.location}, ${tractor.district || 'Ahmedabad'}, ${tractor.state || 'Gujarat'}`)}`}
+                        href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(
+                          `${tractor.location}, ${tractor.district || "Ahmedabad"}, ${tractor.state || "Gujarat"}`
+                        )}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="btn btn-outline-success btn-sm rounded-pill py-0.5 px-2.5 text-decoration-none"
-                        style={{ fontSize: "0.75rem" }}
+                        className="btn btn-outline-success btn-sm rounded-pill px-3 py-1 text-decoration-none"
+                        style={{ fontSize: "0.785rem" }}
                       >
                         🗺️ View on OpenStreetMap
                       </a>
                     </div>
                   </div>
 
-                  <div className="text-end">
-                    <div className="d-flex align-items-center gap-1 text-warning fw-bold fs-5 justify-content-end">
+                  <div className="text-lg-end">
+                    <div className="d-flex align-items-center gap-1.5 text-warning fw-extrabold fs-5">
                       <FaStar /> {tractor.avg_rating || "4.8"}
                     </div>
-                    <span className="text-muted small">({tractor.total_reviews || 0} Customer Reviews)</span>
+                    <span className="text-muted small">({tractor.total_reviews || 0} Reviews)</span>
                   </div>
                 </div>
 
-                <hr className="my-4" />
+                <hr className="my-4 text-muted opacity-25" />
 
-
-                {/* Key Specifications Grid */}
-                <h5 className="fw-bold text-dark mb-3">Tractor Specifications</h5>
-                <div className="row g-3 mb-4">
+                {/* Key Technical Specifications */}
+                <h5 className="fw-bold text-dark mb-3 font-heading">Specifications</h5>
+                <div className="row g-2 g-md-3 mb-4">
                   <div className="col-6 col-md-3">
                     <div className="p-3 bg-light rounded-3 text-center border">
                       <FaTachometerAlt className="text-success fs-4 mb-1" />
@@ -211,27 +239,30 @@ function TractorDetails() {
                 </div>
 
                 {/* Description */}
-                <h5 className="fw-bold text-dark mb-2">Description</h5>
-                <p className="text-secondary leading-relaxed mb-4">{tractor.description || "Well maintained heavy duty tractor suitable for all farm plowing, rotavator, and hauling work."}</p>
+                <h5 className="fw-bold text-dark mb-2 font-heading">Equipment Overview</h5>
+                <p className="text-secondary leading-relaxed mb-4" style={{ lineHeight: 1.7 }}>
+                  {tractor.description ||
+                    "Well maintained heavy duty tractor suitable for all farm plowing, rotavator, and hauling work. Comes with regular maintenance logs."}
+                </p>
 
-                {/* Available Equipment Attachments Section */}
-                <h5 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                  <FaCog className="text-success" /> Owner's Equipment Attachments
+                {/* Equipment Implements Attachments */}
+                <h5 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2 font-heading">
+                  <FaTools className="text-success" /> Compatible Attachments & Implements
                 </h5>
 
                 {!tractor.attached_implements || tractor.attached_implements.length === 0 ? (
-                  <div className="alert alert-light border small text-muted mb-4">
-                    ℹ️ The owner has not listed any extra equipment attachments for this tractor.
+                  <div className="p-3 bg-light rounded-3 border text-muted small mb-4">
+                    ℹ️ No extra implements currently listed for this tractor. Standard hitch connection included.
                   </div>
                 ) : (
                   <div className="row g-3 mb-4">
                     {tractor.attached_implements.map((impl) => (
-                      <div key={impl.id} className="col-md-6">
-                        <div className="p-3 bg-success-subtle rounded-3 border border-success-subtle d-flex justify-content-between align-items-center">
+                      <div key={impl.id} className="col-12 col-md-6">
+                        <div className="p-3 rounded-3 border bg-success-subtle border-success-subtle d-flex justify-content-between align-items-center">
                           <div>
                             <div className="fw-bold text-dark">{impl.name}</div>
                             <div className="text-muted small mb-1">{impl.description || "Farm equipment attachment"}</div>
-                            <span className="badge bg-success text-white">₹{impl.rent_per_day}/day (₹{impl.rent_per_hour}/hr)</span>
+                            <Badge variant="success">₹{impl.rent_per_day}/day (₹{impl.rent_per_hour}/hr)</Badge>
                           </div>
                         </div>
                       </div>
@@ -240,22 +271,24 @@ function TractorDetails() {
                 )}
 
                 {/* Customer Reviews Section */}
-                <h5 className="fw-bold text-dark mb-3">Customer Ratings & Reviews</h5>
+                <h5 className="fw-bold text-dark mb-3 font-heading">Customer Ratings & Reviews</h5>
 
                 {reviews.length === 0 ? (
-                  <p className="text-muted small">No written reviews yet for this tractor.</p>
+                  <p className="text-muted small bg-light p-3 rounded-3 border">No written reviews yet for this tractor.</p>
                 ) : (
                   <div className="d-flex flex-column gap-3">
                     {reviews.map((r) => (
                       <div key={r.id} className="p-3 bg-light rounded-3 border">
                         <div className="d-flex justify-content-between align-items-center mb-1">
-                          <span className="fw-bold text-dark">{r.customer_details?.first_name || "Customer"}</span>
-                          <div className="text-warning small d-flex align-items-center gap-1">
+                          <span className="fw-bold text-dark">{r.customer_details?.first_name || "Verified Farmer"}</span>
+                          <div className="text-warning small d-flex align-items-center gap-1 font-heading fw-bold">
                             <FaStar /> {r.rating} / 5
                           </div>
                         </div>
-                        <p className="text-secondary small m-0">{r.comment}</p>
-                        <span className="text-muted" style={{ fontSize: "0.7rem" }}>{new Date(r.created_at).toLocaleDateString()}</span>
+                        <p className="text-secondary small m-0 mb-1">{r.comment}</p>
+                        <span className="text-muted" style={{ fontSize: "0.725rem" }}>
+                          {new Date(r.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -264,62 +297,111 @@ function TractorDetails() {
             </div>
           </div>
 
-          {/* Sticky Booking Widget & Owner Card */}
-          <div className="col-lg-4">
-            <div className="card glass-card border-0 p-4 sticky-top mb-4" style={{ top: 80 }}>
+          {/* Sticky Booking Widget & Owner Info Sidebar */}
+          <div className="col-12 col-lg-4">
+            <div className="bg-white rounded-4 border p-4 shadow-sm sticky-top" style={{ top: 90 }}>
               <div className="mb-3">
                 <span className="text-muted small d-block">Rental Pricing</span>
                 <div className="d-flex align-items-baseline gap-2">
-                  <span className="display-6 fw-extrabold text-success">₹{tractor.rent_per_day}</span>
+                  <span className="display-6 fw-extrabold text-success font-heading">₹{tractor.rent_per_day}</span>
                   <span className="text-muted">/ day</span>
                 </div>
-                <div className="text-muted small">Hourly Rate: ₹{tractor.rent_per_hour}/hr</div>
+                <div className="text-muted small mt-0.5">Hourly Rate: ₹{tractor.rent_per_hour}/hr</div>
               </div>
 
-              <div className="bg-success-subtle p-3 rounded-3 mb-4 text-success small border border-success-subtle">
-                ✔ Instant Availability Confirmation <br />
-                ✔ Direct Contact with Tractor Owner <br />
-                ✔ Secure Online Payment Option
+              <div className="p-3 rounded-3 mb-4 bg-success-subtle text-success small border border-success-subtle d-flex flex-column gap-1.5">
+                <div className="d-flex align-items-center gap-2">
+                  <FaCheckCircle className="flex-shrink-0" /> Instant Availability Verification
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <FaCheckCircle className="flex-shrink-0" /> Direct Coordination with Owner
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <FaCheckCircle className="flex-shrink-0" /> Secure Payment (Online or Pay on Arrival)
+                </div>
               </div>
 
-              {/* Role-Specific Action Button */}
+              {/* Dynamic Action Button by Role */}
               {user && user.role === "owner" ? (
                 tractor.owner === user.id || tractor.owner_details?.id === user.id ? (
-                  <Link to={`/edit-tractor/${tractor.id}`} className="btn btn-outline-success w-100 py-3 rounded-pill fw-bold text-center mb-3">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    fullWidth
+                    onClick={() => navigate(`/edit-tractor/${tractor.id}`)}
+                    className="mb-3"
+                  >
                     ✏️ Edit My Tractor Listing
-                  </Link>
+                  </Button>
                 ) : (
-                  <div className="alert alert-warning text-center small mb-3 py-2">
+                  <div className="alert alert-warning text-center small mb-3 py-2 rounded-3">
                     🚜 You are logged in as an <strong>Equipment Owner</strong>.
                   </div>
                 )
               ) : user && user.role === "admin" ? (
-                <Link to="/admin-tractors" className="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold text-center mb-3">
-                  🛡️ Manage Tractor in Admin Portal
-                </Link>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  fullWidth
+                  onClick={() => navigate("/admin-tractors")}
+                  className="mb-3"
+                >
+                  🛡️ Manage in Admin Portal
+                </Button>
               ) : (
-                <Link to={`/book-tractor/${tractor.id}`} className="btn btn-tracto-primary w-100 py-3 rounded-pill fw-bold text-center mb-3">
-                  Book This Tractor
-                </Link>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onClick={() => navigate(`/book-tractor/${tractor.id}`)}
+                  className="mb-3"
+                >
+                  Book This Tractor Now
+                </Button>
               )}
 
               {/* Owner Info Box */}
               <div className="border-top pt-3 mt-2">
-                <h6 className="fw-bold text-dark mb-2">Tractor Owner Details</h6>
+                <h6 className="fw-bold text-dark mb-2.5 font-heading">Tractor Owner Details</h6>
                 <div className="d-flex align-items-center gap-3">
-                  <div className="bg-primary text-white p-2.5 rounded-circle">
+                  <div
+                    className="p-2.5 rounded-circle flex-shrink-0"
+                    style={{ background: "var(--primary-50)", color: "var(--primary-700)" }}
+                  >
                     <FaUserCheck className="fs-5" />
                   </div>
                   <div>
-                    <div className="fw-bold text-dark">{tractor.owner_details?.first_name || "Ramesh"} {tractor.owner_details?.last_name || "Patel"}</div>
-                    <div className="text-muted small"><FaPhone className="text-primary" /> {tractor.owner_details?.phone || "Contact via booking"}</div>
+                    <div className="fw-bold text-dark">
+                      {tractor.owner_details?.first_name || "Ramesh"} {tractor.owner_details?.last_name || "Patel"}
+                    </div>
+                    <div className="text-muted small d-flex align-items-center gap-1.5 mt-0.5">
+                      <FaPhone className="text-success" />
+                      <span>{tractor.owner_details?.phone || "Coordinate after booking"}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Lightbox Modal */}
+      <Modal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        title={`${tractor.name} (${tractor.brand})`}
+        size="lg"
+      >
+        <div className="text-center">
+          <img
+            src={galleryImages[activeImgIndex] || mainImage}
+            alt={tractor.name}
+            className="img-fluid rounded-3 mx-auto"
+            style={{ maxHeight: "70vh", objectFit: "contain" }}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

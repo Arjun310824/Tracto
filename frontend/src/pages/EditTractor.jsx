@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaTractor, FaMapMarkerAlt, FaCogs, FaRupeeSign, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaTractor,
+  FaMapMarkerAlt,
+  FaRupeeSign,
+  FaExclamationTriangle,
+  FaArrowLeft,
+  FaCheckCircle,
+} from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 function EditTractor() {
   const { id } = useParams();
@@ -31,6 +40,7 @@ function EditTractor() {
   });
 
   const [mainImage, setMainImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     fetchTractorDetails();
@@ -58,11 +68,24 @@ function EditTractor() {
         description: t.description || "",
         available: t.available ?? true,
       });
+
+      if (t.image) {
+        const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/").replace(/\/api\/?$/, "");
+        setImagePreview(t.image.startsWith("http") ? t.image : `${BACKEND_BASE}${t.image}`);
+      }
     } catch (err) {
       console.error("Error loading tractor details:", err);
       setError("Tractor not found or unauthorized.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setMainImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -96,120 +119,155 @@ function EditTractor() {
 
   if (loading) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status"></div>
+        <div className="text-center py-5 my-auto">
+          <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+          <p className="text-muted small mt-3">Loading tractor details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container py-4" style={{ maxWidth: 880 }}>
-        <h2 className="fw-extrabold text-dark mb-4">Edit Tractor Listing</h2>
+      <main className="container py-4 flex-grow-1" style={{ maxWidth: 860 }}>
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/my-tractors")}
+            icon={<FaArrowLeft />}
+          >
+            Back to My Fleet
+          </Button>
+        </div>
 
-        {error && <div className="alert alert-danger small p-3 rounded-3 mb-4 d-flex align-items-center gap-2"><FaExclamationTriangle /> {error}</div>}
+        <div className="bg-white rounded-4 border p-4 p-md-5 shadow-sm">
+          <div className="text-center mb-4 pb-3 border-bottom">
+            <h1 className="h3 fw-extrabold text-dark m-0 font-heading">Edit Tractor Listing</h1>
+            <p className="text-muted small mt-1">Update rates, specifications, and machine availability</p>
+          </div>
 
-        <div className="card glass-card border-0 p-4">
+          {error && (
+            <div className="alert alert-danger p-3 rounded-3 mb-4 small d-flex align-items-center gap-2">
+              <FaExclamationTriangle />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
-            <h5 className="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
-              <FaTractor className="text-success" /> Basic Information
+            <h5 className="fw-bold text-dark mb-3 font-heading d-flex align-items-center gap-2">
+              <FaTractor className="text-success" /> Machinery Details
             </h5>
 
-            <div className="row g-3 mb-4">
-              <div className="col-md-6">
-                <label className="form-label fw-semibold small text-muted">Tractor Name / Title *</label>
-                <input
-                  type="text"
-                  className="form-control"
+            <div className="row g-2 mb-3">
+              <div className="col-12 col-md-8">
+                <Input
+                  label="Tractor Name / Title *"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="col-md-6">
-                <label className="form-label fw-semibold small text-muted">Brand *</label>
-                <select className="form-select" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })}>
-                  <option value="Mahindra">Mahindra</option>
-                  <option value="Swaraj">Swaraj</option>
-                  <option value="John Deere">John Deere</option>
-                  <option value="Sonalika">Sonalika</option>
-                  <option value="Farmtrac">Farmtrac</option>
-                  <option value="Eicher">Eicher</option>
-                  <option value="New Holland">New Holland</option>
-                  <option value="Kubota">Kubota</option>
-                </select>
-              </div>
-
-              <div className="col-md-6">
-                <label className="form-label fw-semibold small text-muted">Model Code / Specification *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="col-md-6">
-                <label className="form-label fw-semibold small text-muted">Replace Main Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="form-control"
-                  onChange={(e) => setMainImage(e.target.files[0])}
-                />
+              <div className="col-12 col-md-4">
+                <label className="tracto-label">Brand *</label>
+                <div className="tracto-input-wrapper">
+                  <select
+                    className="tracto-input"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                  >
+                    <option value="Mahindra">Mahindra</option>
+                    <option value="Swaraj">Swaraj</option>
+                    <option value="John Deere">John Deere</option>
+                    <option value="Sonalika">Sonalika</option>
+                    <option value="Farmtrac">Farmtrac</option>
+                    <option value="Eicher">Eicher</option>
+                    <option value="New Holland">New Holland</option>
+                    <option value="Kubota">Kubota</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <h5 className="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
-              <FaCogs className="text-primary" /> Technical Specifications
-            </h5>
-
-            <div className="row g-3 mb-4">
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">Horsepower (HP) *</label>
-                <input
+            <div className="row g-2 mb-3">
+              <div className="col-6 col-md-3">
+                <Input
+                  label="Horsepower (HP) *"
                   type="number"
-                  className="form-control"
                   value={formData.horsepower}
-                  onChange={(e) => setFormData({ ...formData, horsepower: parseInt(e.target.value) || 45 })}
+                  onChange={(e) => setFormData({ ...formData, horsepower: parseInt(e.target.value) || 0 })}
                   required
                 />
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">Manufacturing Year</label>
-                <input
+              <div className="col-6 col-md-3">
+                <Input
+                  label="Mfg Year *"
                   type="number"
-                  className="form-control"
                   value={formData.manufacturing_year}
-                  onChange={(e) => setFormData({ ...formData, manufacturing_year: parseInt(e.target.value) || 2023 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, manufacturing_year: parseInt(e.target.value) || 2023 })
+                  }
+                  required
                 />
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">Rent Per Day (₹)</label>
-                <input
+              <div className="col-6 col-md-3">
+                <label className="tracto-label">Fuel Type</label>
+                <div className="tracto-input-wrapper">
+                  <select
+                    className="tracto-input"
+                    value={formData.fuel_type}
+                    onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })}
+                  >
+                    <option value="diesel">Diesel</option>
+                    <option value="electric">Electric</option>
+                    <option value="petrol">Petrol</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-3">
+                <label className="tracto-label">Transmission</label>
+                <div className="tracto-input-wrapper">
+                  <select
+                    className="tracto-input"
+                    value={formData.transmission}
+                    onChange={(e) => setFormData({ ...formData, transmission: e.target.value })}
+                  >
+                    <option value="manual">Manual</option>
+                    <option value="automatic">Automatic</option>
+                    <option value="power_steering">Power Steering</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <h5 className="fw-bold text-dark mt-4 mb-3 font-heading d-flex align-items-center gap-2">
+              <FaRupeeSign className="text-success" /> Rental Pricing
+            </h5>
+
+            <div className="row g-2 mb-3">
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="Rent per Day (₹) *"
                   type="number"
-                  className="form-control"
                   value={formData.rent_per_day}
                   onChange={(e) => setFormData({ ...formData, rent_per_day: parseFloat(e.target.value) || 0 })}
                   required
                 />
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">Rent Per Hour (₹)</label>
-                <input
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="Rent per Hour (₹) *"
                   type="number"
-                  className="form-control"
                   value={formData.rent_per_hour}
                   onChange={(e) => setFormData({ ...formData, rent_per_hour: parseFloat(e.target.value) || 0 })}
                   required
@@ -217,66 +275,105 @@ function EditTractor() {
               </div>
             </div>
 
-            {/* Location & Description */}
-            <h5 className="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
-              <FaMapMarkerAlt className="text-danger" /> Location & Details
+            {/* Location */}
+            <h5 className="fw-bold text-dark mt-4 mb-3 font-heading d-flex align-items-center gap-2">
+              <FaMapMarkerAlt className="text-danger" /> Location
             </h5>
 
-            <div className="row g-3 mb-4">
-              <div className="col-md-6">
-                <label className="form-label fw-semibold small text-muted">Full Address / Location *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            <div className="row g-2 mb-3">
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="State *"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">District</label>
-                <input
-                  type="text"
-                  className="form-control"
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="District *"
                   value={formData.district}
                   onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  required
                 />
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label fw-semibold small text-muted">Village / City</label>
-                <input
-                  type="text"
-                  className="form-control"
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="City / Village *"
                   value={formData.city_village}
                   onChange={(e) => setFormData({ ...formData, city_village: e.target.value })}
+                  required
                 />
               </div>
 
-              <div className="col-12">
-                <label className="form-label fw-semibold small text-muted">Description</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                ></textarea>
+              <div className="col-12 col-sm-6">
+                <Input
+                  label="PIN Code"
+                  value={formData.pincode}
+                  onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                />
               </div>
             </div>
 
+            {/* Image Preview & Upload */}
+            <div className="mb-4">
+              <label className="tracto-label mb-2">Primary Equipment Photo</label>
+              <div className="p-3 bg-light rounded-3 border text-center">
+                {imagePreview && (
+                  <div className="mb-3">
+                    <img
+                      src={imagePreview}
+                      alt="Current"
+                      className="rounded-3 mx-auto"
+                      style={{ maxHeight: 200, objectFit: "cover" }}
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="tracto-input p-2 rounded-3 border bg-white"
+                  style={{ width: "100%", maxWidth: 360 }}
+                />
+                <small className="text-muted d-block mt-2">
+                  Select a new photo if you want to replace the current image.
+                </small>
+              </div>
+            </div>
 
-            <div className="d-flex justify-content-end gap-3">
-              <button type="button" className="btn btn-light rounded-pill px-4" onClick={() => navigate("/my-tractors")}>
+            {/* Description */}
+            <div className="mb-4">
+              <label className="tracto-label">Description</label>
+              <textarea
+                className="tracto-input p-3 rounded-3 border"
+                rows="3"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                style={{ width: "100%", outline: "none", borderColor: "var(--border-subtle)" }}
+              />
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 pt-3 border-top">
+              <Button variant="ghost" onClick={() => navigate("/my-tractors")}>
                 Cancel
-              </button>
-              <button type="submit" className="btn btn-tracto-primary rounded-pill px-5 fw-bold" disabled={saving}>
-                {saving ? "Saving Changes..." : "Update Tractor"}
-              </button>
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={saving}
+                loadingText="Saving Changes..."
+                icon={<FaCheckCircle />}
+              >
+                Save Changes
+              </Button>
             </div>
           </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

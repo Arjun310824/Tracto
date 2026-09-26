@@ -3,12 +3,24 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLanguage } from "../context/LanguageContext";
 import api from "../api/axios";
-import { FaRobot, FaTractor, FaGasPump, FaClock, FaCheckCircle, FaSeedling, FaSlidersH, FaRupeeSign, FaStar, FaInfoCircle } from "react-icons/fa";
+import {
+  FaRobot,
+  FaTractor,
+  FaGasPump,
+  FaClock,
+  FaCheckCircle,
+  FaRupeeSign,
+  FaStar,
+  FaInfoCircle,
+  FaArrowRight,
+} from "react-icons/fa";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { Card } from "../components/ui/Card";
 
 function AIRecommendation() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-
 
   const [formData, setFormData] = useState({
     crop_type: "cotton",
@@ -53,15 +65,14 @@ function AIRecommendation() {
     setError("");
     setResults(null);
 
-    // Simulate real-time AI calculation steps for WOW factor
-    setAnalysisStep("🧠 Analyzing Crop & Land Profile...");
-    await new Promise((r) => setTimeout(r, 600));
+    setAnalysisStep("🧠 Analyzing Crop & Land Soil Profile...");
+    await new Promise((r) => setTimeout(r, 500));
 
     setAnalysisStep("⚙️ Calculating Target Horsepower & Soil Resistance...");
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 500));
 
     setAnalysisStep("⛽ Estimating Fuel Consumption & Operation Time...");
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 500));
 
     setAnalysisStep("🎯 Matching Best Machinery from Available Catalog...");
 
@@ -78,275 +89,263 @@ function AIRecommendation() {
   };
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container py-4">
-        {/* Header Banner */}
-        <div className="bg-dark text-white rounded-4 p-4 p-md-5 mb-4 shadow-lg position-relative overflow-hidden border border-success border-2">
+      <main className="container py-4 flex-grow-1">
+        {/* Header Hero Banner */}
+        <div
+          className="rounded-4 p-4 p-md-5 mb-4 text-white shadow-lg position-relative overflow-hidden border"
+          style={{
+            background: "linear-gradient(135deg, #052e16 0%, #064e3b 50%, #065f46 100%)",
+            borderColor: "rgba(52, 211, 153, 0.3)",
+          }}
+        >
           <div className="row align-items-center position-relative z-1">
-            <div className="col-md-8">
-              <span className="badge bg-success text-white px-3 py-2 rounded-pill fw-bold mb-3 d-inline-flex align-items-center gap-2">
+            <div className="col-12 col-md-8">
+              <span className="badge bg-success text-white px-3 py-1.5 rounded-pill fw-bold mb-3 d-inline-flex align-items-center gap-2">
                 <FaRobot /> Smart AI Engine v2.0
               </span>
-              <h1 className="fw-bold display-6 text-white mb-2">
-                {t("aiHeroTitle")}
+              <h1 className="fw-extrabold display-6 text-white mb-2 font-heading">
+                {t("aiHeroTitle") || "AI Farm Machinery Advisor"}
               </h1>
-              <p className="text-light fs-5 mb-0 opacity-90">
-                {t("aiHeroSub")}
+              <p className="text-light fs-6 mb-0 opacity-90 leading-relaxed">
+                {t("aiHeroSub") || "Tell our algorithm your land size, soil type, and target crop — we'll calculate exact HP needed and estimate fuel & hours."}
               </p>
             </div>
-            <div className="col-md-4 text-center mt-3 mt-md-0">
-              <div className="display-1 text-success opacity-75">
-                <FaTractor />
+            <div className="col-12 col-md-4 text-center text-md-end mt-3 mt-md-0">
+              <div className="display-3 text-success opacity-80">
+                <FaRobot />
               </div>
             </div>
           </div>
         </div>
 
-        {/* AI Form & Results Layout */}
-        <div className="row g-4">
-          {/* Left Form Column */}
-          <div className="col-lg-5">
-            <div className="card border-0 shadow-sm rounded-4 p-4 sticky-top" style={{ top: "90px" }}>
-              <h5 className="fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
-                <FaSlidersH className="text-success" /> {t("selectFarmingDetails")}
-              </h5>
+        {/* Input Parameters Form */}
+        <div className="bg-white rounded-4 border p-4 shadow-sm mb-4">
+          <h4 className="fw-extrabold text-dark mb-3 font-heading d-flex align-items-center gap-2">
+            <span>🌾 Crop & Field Parameters</span>
+          </h4>
 
-              <form onSubmit={handleAnalyze}>
-                {/* Crop Selection */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-secondary">{t("cropType")}</label>
-                  <div className="d-flex flex-wrap gap-2">
-                    {crops.map((c) => (
-                      <button
-                        type="button"
-                        key={c.id}
-                        className={`btn btn-sm rounded-pill px-3 py-2 transition-all ${
-                          formData.crop_type === c.id
-                            ? "btn-success shadow-sm fw-bold"
-                            : "btn-outline-secondary border-light-subtle"
-                        }`}
-                        onClick={() => setFormData({ ...formData, crop_type: c.id })}
-                      >
-                        {c.icon} {c.label}
-                      </button>
-                    ))}
-                  </div>
+          <form onSubmit={handleAnalyze}>
+            <div className="row g-4">
+              {/* Crop Selector */}
+              <div className="col-12">
+                <label className="tracto-label mb-2">1. Select Target Crop</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {crops.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 transition-all ${
+                        formData.crop_type === c.id
+                          ? "btn-success text-white shadow-sm"
+                          : "btn-outline-secondary bg-light text-dark"
+                      }`}
+                      onClick={() => setFormData({ ...formData, crop_type: c.id })}
+                    >
+                      <span>{c.icon}</span>
+                      <span>{c.label}</span>
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Field Size Slider */}
-                <div className="mb-3">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <label className="form-label fw-semibold small text-secondary">{t("fieldSize")}</label>
-                    <span className="badge bg-success fs-6 rounded-pill px-3 py-1 fw-bold">
-                      {formData.field_size_acres} {t("acres")}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    className="form-range text-success"
-                    min="1"
-                    max="50"
-                    step="1"
-                    value={formData.field_size_acres}
-                    onChange={(e) => setFormData({ ...formData, field_size_acres: parseFloat(e.target.value) })}
-                  />
-                  <div className="d-flex justify-content-between text-muted small">
-                    <span>1 {t("acres")}</span>
-                    <span>25 {t("acres")}</span>
-                    <span>50 {t("acres")}</span>
-                  </div>
+              {/* Field Size */}
+              <div className="col-12 col-md-4">
+                <label className="tracto-label mb-1">
+                  2. Field Size (Acres): <strong className="text-success ms-1">{formData.field_size_acres} Acres</strong>
+                </label>
+                <input
+                  type="range"
+                  className="form-range"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value={formData.field_size_acres}
+                  onChange={(e) => setFormData({ ...formData, field_size_acres: parseInt(e.target.value) || 1 })}
+                />
+                <div className="d-flex justify-content-between text-muted small">
+                  <span>1 Acre</span>
+                  <span>50 Acres</span>
+                  <span>100 Acres</span>
                 </div>
+              </div>
 
-                {/* Soil Type */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-secondary">{t("soilType")}</label>
-                  <select
-                    className="form-select rounded-3 border-secondary-subtle"
-                    value={formData.soil_type}
-                    onChange={(e) => setFormData({ ...formData, soil_type: e.target.value })}
-                  >
-                    {soilTypes.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
+              {/* Soil Type */}
+              <div className="col-12 col-md-4">
+                <label className="tracto-label mb-2">3. Soil Texture</label>
+                <div className="d-flex flex-column gap-1.5">
+                  {soilTypes.map((st) => (
+                    <button
+                      key={st.id}
+                      type="button"
+                      className={`btn btn-sm text-start py-2 px-3 rounded-3 fw-semibold ${
+                        formData.soil_type === st.id
+                          ? "btn-success text-white shadow-sm"
+                          : "btn-light text-secondary border"
+                      }`}
+                      onClick={() => setFormData({ ...formData, soil_type: st.id })}
+                    >
+                      {st.label}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Task Purpose */}
-                <div className="mb-4">
-                  <label className="form-label fw-semibold small text-secondary">{t("taskPurpose")}</label>
-                  <select
-                    className="form-select rounded-3 border-secondary-subtle"
-                    value={formData.task_purpose}
-                    onChange={(e) => setFormData({ ...formData, task_purpose: e.target.value })}
-                  >
-                    {tasks.map((tItem) => (
-                      <option key={tItem.id} value={tItem.id}>
-                        {tItem.label}
-                      </option>
-                    ))}
-                  </select>
+              {/* Farming Operation / Task */}
+              <div className="col-12 col-md-4">
+                <label className="tracto-label mb-2">4. Operation Task</label>
+                <div className="d-flex flex-column gap-1.5">
+                  {tasks.map((task) => (
+                    <button
+                      key={task.id}
+                      type="button"
+                      className={`btn btn-sm text-start py-2 px-3 rounded-3 fw-semibold ${
+                        formData.task_purpose === task.id
+                          ? "btn-success text-white shadow-sm"
+                          : "btn-light text-secondary border"
+                      }`}
+                      onClick={() => setFormData({ ...formData, task_purpose: task.id })}
+                    >
+                      {task.label}
+                    </button>
+                  ))}
                 </div>
-
-                {/* Action Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 py-3"
-                >
-                  <FaRobot /> {loading ? t("aiAnalyzing") : t("generateAiBtn")}
-                </button>
-
-              </form>
+              </div>
             </div>
+
+            <div className="mt-4 pt-3 border-top d-flex justify-content-end">
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={loading}
+                loadingText={analysisStep || "Calculating Best Match..."}
+                icon={<FaRobot />}
+                className="px-4"
+              >
+                Run AI Match Analysis
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        {/* Dynamic Loading State Feedback */}
+        {loading && (
+          <div className="bg-white rounded-4 border p-4 shadow-sm text-center mb-4">
+            <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+            <h5 className="fw-bold text-dark mt-3 font-heading">{analysisStep}</h5>
+            <p className="text-muted small">Optimizing machinery specs for your soil condition and crop...</p>
           </div>
+        )}
 
-          {/* Right Results Column */}
-          <div className="col-lg-7">
-            {loading && (
-              <div className="card border-0 shadow-sm rounded-4 p-5 text-center my-auto">
-                <div className="spinner-grow text-success mb-3" style={{ width: "3.5rem", height: "3.5rem" }} role="status"></div>
-                <h5 className="fw-bold text-dark mb-2">AI Processing Engine Active</h5>
-                <p className="text-success fw-medium animate-pulse">{analysisStep}</p>
-              </div>
-            )}
+        {error && (
+          <div className="alert alert-danger p-3 rounded-3 mb-4 shadow-sm">{error}</div>
+        )}
 
-            {error && (
-              <div className="alert alert-danger rounded-4 shadow-sm" role="alert">
-                {error}
-              </div>
-            )}
-
-            {!loading && !results && !error && (
-              <div className="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
-                <div className="display-3 text-success opacity-50 mb-3">
-                  <FaSeedling />
-                </div>
-                <h5 className="fw-bold text-dark">Ready to Recommend</h5>
-                <p className="mb-0"> Select your crop, field size, and task on the left to get instant AI recommendations.</p>
-              </div>
-            )}
-
-            {results && !loading && (
+        {/* AI Results Section */}
+        {results && (
+          <div className="bg-white rounded-4 border p-4 shadow-sm mb-4">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-3 border-bottom">
               <div>
-                {/* AI Summary Banner */}
-                <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-start border-success border-4">
-                  <h6 className="text-uppercase text-success fw-bold small mb-2">AI Analysis Summary</h6>
-                  <div className="row g-3">
-                    <div className="col-6 col-sm-3">
-                      <div className="text-muted small">Target HP</div>
-                      <div className="fs-5 fw-bold text-dark">{results.target_hp} HP</div>
-                    </div>
-                    <div className="col-6 col-sm-3">
-                      <div className="text-muted small">Field Area</div>
-                      <div className="fs-5 fw-bold text-dark">{results.field_size_acres} Acres</div>
-                    </div>
-                    <div className="col-6 col-sm-3">
-                      <div className="text-muted small">Task</div>
-                      <div className="fs-5 fw-bold text-dark">{results.task_purpose}</div>
-                    </div>
-                    <div className="col-6 col-sm-3">
-                      <div className="text-muted small">AI Matches</div>
-                      <div className="fs-5 fw-bold text-success">{results.total_results} Found</div>
-                    </div>
+                <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill small fw-bold">
+                  ✓ Analysis Complete
+                </span>
+                <h3 className="fw-extrabold text-dark mt-2 mb-0 font-heading">
+                  AI Recommendation & Cost Estimate
+                </h3>
+              </div>
+              <Badge variant="primary" size="md">
+                Matched for {formData.field_size_acres} Acres
+              </Badge>
+            </div>
+
+            {/* Metric Cards Row */}
+            <div className="row g-3 mb-4">
+              <div className="col-12 col-sm-6 col-lg-3">
+                <Card className="p-3 bg-light border text-center">
+                  <FaTractor className="text-success fs-3 mb-1 mx-auto" />
+                  <div className="text-muted small">Recommended Power</div>
+                  <div className="fw-extrabold text-dark fs-4 font-heading">
+                    {results.recommended_hp || "45 - 55"} HP
                   </div>
+                </Card>
+              </div>
+
+              <div className="col-12 col-sm-6 col-lg-3">
+                <Card className="p-3 bg-light border text-center">
+                  <FaClock className="text-info fs-3 mb-1 mx-auto" />
+                  <div className="text-muted small">Estimated Time</div>
+                  <div className="fw-extrabold text-dark fs-4 font-heading">
+                    {results.estimated_hours || "6 - 8"} Hours
+                  </div>
+                </Card>
+              </div>
+
+              <div className="col-12 col-sm-6 col-lg-3">
+                <Card className="p-3 bg-light border text-center">
+                  <FaGasPump className="text-warning fs-3 mb-1 mx-auto" />
+                  <div className="text-muted small">Estimated Fuel</div>
+                  <div className="fw-extrabold text-dark fs-4 font-heading">
+                    {results.estimated_fuel_liters || "25 - 32"} L
+                  </div>
+                </Card>
+              </div>
+
+              <div className="col-12 col-sm-6 col-lg-3">
+                <Card className="p-3 bg-light border text-center">
+                  <FaRupeeSign className="text-primary fs-3 mb-1 mx-auto" />
+                  <div className="text-muted small">Estimated Work Cost</div>
+                  <div className="fw-extrabold text-success fs-4 font-heading">
+                    ₹{results.estimated_cost || "3,200"}
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* AI Advisor Rationale */}
+            {results.advice && (
+              <div className="p-3.5 rounded-3 bg-success-subtle text-success-emphasis border border-success-subtle mb-4">
+                <div className="fw-bold d-flex align-items-center gap-1.5 mb-1">
+                  <FaInfoCircle /> AI Agronomist Insight:
                 </div>
+                <p className="small mb-0 leading-relaxed">{results.advice}</p>
+              </div>
+            )}
 
-                <h5 className="fw-bold text-dark mb-3">Top AI Recommended Machinery</h5>
-
-                {results.recommendations.length === 0 ? (
-                  <div className="alert alert-warning rounded-4">
-                    No approved tractors match these exact filters currently.
-                  </div>
-                ) : (
-                  results.recommendations.map((rec, idx) => (
-                    <div key={rec.tractor_id} className="card border-0 shadow-sm rounded-4 p-4 mb-3 hover-lift transition-all">
-                      <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+            {/* Matched Tractors in Catalog */}
+            {results.matched_tractors && results.matched_tractors.length > 0 && (
+              <div>
+                <h5 className="fw-bold text-dark mb-3 font-heading">Best Matched Machinery in Your Area</h5>
+                <div className="row g-3">
+                  {results.matched_tractors.map((t) => (
+                    <div key={t.id} className="col-12 col-md-6">
+                      <div className="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center">
                         <div>
-                          <span className={`badge px-3 py-1.5 rounded-pill fw-bold ${idx === 0 ? "bg-success text-white" : "bg-dark text-white"}`}>
-                            #{idx + 1} Best Match ({rec.match_score}% AI Score)
-                          </span>
-                          <h4 className="fw-bold text-dark mb-1 mt-2">{rec.brand} {rec.model}</h4>
-                          <div className="text-muted small d-flex align-items-center gap-2">
-                            <span>📍 {rec.district}</span>
-                            <span>•</span>
-                            <span className="text-warning fw-bold d-inline-flex align-items-center gap-1">
-                              <FaStar /> {rec.avg_rating}
-                            </span>
+                          <div className="fw-bold text-dark fs-6">{t.name}</div>
+                          <div className="text-muted small">
+                            {t.horsepower} HP • {t.brand} • {t.location}
                           </div>
+                          <div className="text-success fw-bold font-heading mt-1">₹{t.rent_per_day} / day</div>
                         </div>
-                        <div className="text-end">
-                          <div className="fs-4 fw-bold text-success">
-                            ₹{rec.rent_per_hour}<span className="fs-6 text-muted font-normal">/hr</span>
-                          </div>
-                          <div className="small text-muted">₹{rec.rent_per_day}/day</div>
-                        </div>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => navigate(`/book-tractor/${t.id}`)}
+                          icon={<FaArrowRight />}
+                        >
+                          Book Now
+                        </Button>
                       </div>
-
-                      {/* AI Estimation Metrics */}
-                      <div className="bg-light rounded-3 p-3 mb-3">
-                        <div className="row text-center g-2">
-                          <div className="col-4 border-end">
-                            <div className="text-muted small d-flex align-items-center justify-content-center gap-1">
-                              <FaClock className="text-primary" /> Est. Time
-                            </div>
-                            <div className="fw-bold text-dark">{rec.estimated_hours} hrs</div>
-                          </div>
-                          <div className="col-4 border-end">
-                            <div className="text-muted small d-flex align-items-center justify-content-center gap-1">
-                              <FaGasPump className="text-danger" /> Est. Fuel
-                            </div>
-                            <div className="fw-bold text-dark">{rec.estimated_fuel_liters} Liters</div>
-                          </div>
-                          <div className="col-4">
-                            <div className="text-muted small d-flex align-items-center justify-content-center gap-1">
-                              <FaRupeeSign className="text-success" /> Est. Total
-                            </div>
-                            <div className="fw-bold text-success">₹{rec.estimated_total_cost}</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bilingual Reason */}
-                      <div className="alert alert-light border border-secondary-subtle rounded-3 py-2 px-3 mb-3 small">
-                        <div className="fw-bold text-dark d-flex align-items-center gap-1 mb-1">
-                          <FaInfoCircle className="text-success" /> AI Insight (ગુજરાતી)
-                        </div>
-                        <div className="text-secondary">{rec.reason_gu}</div>
-                      </div>
-
-                      {/* Attached Implements if any */}
-                      {rec.matching_implements.length > 0 && (
-                        <div className="mb-3">
-                          <span className="small fw-semibold text-muted d-block mb-1">Recommended Attached Implements:</span>
-                          <div className="d-flex flex-wrap gap-2">
-                            {rec.matching_implements.map((imp) => (
-                              <span key={imp.id} className="badge bg-secondary-subtle text-dark border px-2.5 py-1.5 rounded-pill">
-                                🔧 {imp.name} (+₹{imp.rent_per_hour}/hr)
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* CTA Button */}
-                      <button
-                        className="btn btn-success rounded-pill fw-bold w-100 d-flex align-items-center justify-content-center gap-2 py-2"
-                        onClick={() => navigate(`/book-tractor/${rec.tractor_id}`)}
-                      >
-                        <FaCheckCircle /> Book This Machinery Now
-                      </button>
                     </div>
-                  ))
-                )}
+                  ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaBell, FaCheck, FaTrash, FaInfoCircle, FaTractor } from "react-icons/fa";
+import { FaBell, FaCheck } from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { EmptyState } from "../components/ui/EmptyState";
 
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
@@ -33,54 +36,76 @@ function NotificationsPage() {
     }
   };
 
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container-fluid">
+      <div className="container-fluid flex-grow-1">
         <div className="row">
-          <div className="col-lg-3 col-xl-2 p-0 d-none d-lg-block">
+          {/* Responsive Sidebar for Mobile & Desktop */}
+          <div className="col-12 col-lg-3 col-xl-2 p-0">
             <Sidebar />
           </div>
 
-          <div className="col-lg-9 col-xl-10 p-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="col-12 col-lg-9 col-xl-10 p-3 p-md-4">
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
               <div>
-                <h2 className="fw-extrabold text-dark m-0 d-flex align-items-center gap-2">
+                <h1 className="h3 fw-extrabold text-dark m-0 font-heading d-flex align-items-center gap-2">
                   <FaBell className="text-success" /> Notifications & Alerts
-                </h2>
-                <p className="text-muted small">Stay updated on your tractor rental requests, approvals, and payments</p>
+                </h1>
+                <p className="text-muted small m-0 mt-0.5">
+                  Stay updated on your equipment booking requests, approvals, and dispatch alerts
+                </p>
               </div>
 
-              <button className="btn btn-outline-success rounded-pill btn-sm fw-bold d-flex align-items-center gap-1.5" onClick={handleMarkAllRead}>
-                <FaCheck /> Mark All as Read
-              </button>
+              {unreadCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAllRead}
+                  icon={<FaCheck />}
+                >
+                  Mark All as Read ({unreadCount})
+                </Button>
+              )}
             </div>
 
             {loading ? (
               <div className="text-center py-5">
-                <div className="spinner-border text-success" role="status"></div>
+                <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+                <p className="text-muted small mt-3">Loading notifications...</p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="glass-card p-5 text-center my-4">
-                <FaBell className="fs-1 text-muted mb-3" />
-                <h5 className="fw-bold">No Notifications Yet</h5>
-                <p className="text-muted small">You will receive notifications when booking requests, approvals, or payments occur.</p>
+              <div className="bg-white rounded-4 border p-5 shadow-sm my-2">
+                <EmptyState
+                  icon={<FaBell />}
+                  title="No Notifications Yet"
+                  description="You will receive alerts here when booking requests, owner approvals, or trip dispatches happen."
+                />
               </div>
             ) : (
-              <div className="d-flex flex-column gap-3">
+              <div className="d-flex flex-column gap-2.5">
                 {notifications.map((n) => (
-                  <div key={n.id} className={`glass-card p-3.5 border-start border-4 ${n.is_read ? "border-secondary opacity-75" : "border-success"}`}>
-                    <div className="d-flex justify-content-between align-items-start mb-1">
+                  <div
+                    key={n.id}
+                    className={`p-3.5 rounded-3 border transition-all ${
+                      n.is_read
+                        ? "bg-white border-light-subtle opacity-80"
+                        : "bg-success-subtle border-success shadow-sm"
+                    }`}
+                  >
+                    <div className="d-flex justify-content-between align-items-start mb-1 gap-2">
                       <div className="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
-                        {!n.is_read && <span className="badge bg-success rounded-circle p-1"> </span>}
-                        {n.title}
+                        {!n.is_read && <span className="tracto-badge-dot bg-success" />}
+                        <span>{n.title}</span>
                       </div>
-                      <span className="text-muted small" style={{ fontSize: "0.75rem" }}>
+                      <span className="text-muted small text-nowrap" style={{ fontSize: "0.75rem" }}>
                         {new Date(n.created_at).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-secondary small m-0 ms-3">{n.message}</p>
+                    <p className="text-secondary small m-0 mt-1">{n.message}</p>
                   </div>
                 ))}
               </div>

@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FaFilter, FaSearch, FaRedo, FaTractor } from "react-icons/fa";
+import { FaFilter, FaSearch, FaRedo, FaTractor, FaTimes, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import TractorCard from "../components/TractorCard";
 import { useLanguage } from "../context/LanguageContext";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { EmptyState } from "../components/ui/EmptyState";
 
 function TractorList() {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
-
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [brand, setBrand] = useState(searchParams.get("brand") || "");
@@ -23,8 +25,22 @@ function TractorList() {
   const [available, setAvailable] = useState(searchParams.get("available") || "true");
   const [sortBy, setSortBy] = useState(searchParams.get("sort_by") || "newest");
 
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [tractors, setTractors] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Calculate active filter count
+  const activeFilterCount = [
+    brand,
+    location,
+    startDate,
+    endDate,
+    minPrice,
+    maxPrice,
+    minHp,
+    maxHp,
+    available !== "true" ? available : null,
+  ].filter(Boolean).length;
 
   useEffect(() => {
     fetchTractors();
@@ -46,9 +62,9 @@ function TractorList() {
   const handleApplyFilter = (e) => {
     if (e) e.preventDefault();
     const params = new URLSearchParams();
-    if (search) params.set("search", search);
+    if (search.trim()) params.set("search", search.trim());
     if (brand) params.set("brand", brand);
-    if (location) params.set("location", location);
+    if (location.trim()) params.set("location", location.trim());
     if (startDate) params.set("start_date", startDate);
     if (endDate) params.set("end_date", endDate);
     if (minPrice) params.set("min_price", minPrice);
@@ -58,6 +74,7 @@ function TractorList() {
     if (available) params.set("available", available);
     if (sortBy) params.set("sort_by", sortBy);
     setSearchParams(params);
+    setMobileFilterOpen(false);
   };
 
   const handleReset = () => {
@@ -73,227 +90,319 @@ function TractorList() {
     setAvailable("true");
     setSortBy("newest");
     setSearchParams({});
+    setMobileFilterOpen(false);
   };
 
-
-  return (
-    <div className="bg-light min-vh-100">
-      <Navbar />
-
-      <div className="container py-4">
-        {/* Header Title */}
-        <div className="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <h2 className="fw-extrabold text-dark m-0">{t("exploreTitle")}</h2>
-            <p className="text-muted small m-0">Find top performance farming tractors by brand, price, horsepower, and location</p>
-          </div>
-          <span className="badge bg-success-subtle text-success fs-6 border border-success-subtle px-3 py-2">
-            {tractors.length} {t("available")}
-          </span>
+  const renderFilterForm = () => (
+    <form onSubmit={handleApplyFilter}>
+      {/* Keyword Search */}
+      <div className="mb-3">
+        <label className="tracto-label">Search Model / Name</label>
+        <div className="tracto-input-wrapper has-icon-left">
+          <span className="tracto-input-icon left"><FaSearch /></span>
+          <input
+            type="text"
+            className="tracto-input"
+            placeholder={t("searchPlaceholder") || "e.g. Mahindra 575 DI"}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+      </div>
 
-        <div className="row g-4">
-          {/* Filters Sidebar */}
-          <div className="col-lg-3">
-            <div className="filter-box shadow-sm">
-              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <h5 className="fw-bold m-0 d-flex align-items-center gap-2">
-                  <FaFilter className="text-success fs-6" /> {t("filterByBrand")}
-                </h5>
-                <button className="btn btn-link text-decoration-none p-0 text-muted small d-flex align-items-center gap-1" onClick={handleReset}>
-                  <FaRedo /> Reset
-                </button>
-              </div>
+      {/* Location / District */}
+      <div className="mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-1">
+          <label className="tracto-label mb-0">Location / District</label>
+          <button
+            type="button"
+            className="btn btn-link p-0 text-success fw-bold text-decoration-none small"
+            style={{ fontSize: "0.75rem" }}
+            onClick={() => {
+              const user = JSON.parse(localStorage.getItem("user") || "null");
+              const userLoc = user?.district || "Ahmedabad";
+              setLocation(userLoc);
+            }}
+          >
+            📍 Near Me
+          </button>
+        </div>
+        <div className="tracto-input-wrapper has-icon-left">
+          <span className="tracto-input-icon left"><FaMapMarkerAlt /></span>
+          <input
+            type="text"
+            className="tracto-input"
+            placeholder="e.g. Sanand, Anand, Mehsana"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+      </div>
 
-              <form onSubmit={handleApplyFilter}>
-                {/* Keyword Search */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-muted">Search Name / Model</label>
-                  <div className="input-group input-group-sm">
-                    <span className="input-group-text bg-light text-muted border-end-0">
-                      <FaSearch />
-                    </span>
-                    <input
-                      type="text"
-                      className="form-control border-start-0 ps-0"
-                      placeholder={t("searchPlaceholder")}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                </div>
+      {/* Availability Dates */}
+      <div className="mb-3 p-2.5 rounded-3 bg-light border">
+        <label className="tracto-label mb-1.5 d-flex align-items-center gap-1.5">
+          <FaCalendarAlt className="text-success" /> Work Date Range
+        </label>
+        <div className="row g-2">
+          <div className="col-6">
+            <input
+              type="date"
+              className="tracto-input bg-white"
+              style={{ minHeight: 38, fontSize: "0.8125rem" }}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              title="Start Date"
+            />
+          </div>
+          <div className="col-6">
+            <input
+              type="date"
+              className="tracto-input bg-white"
+              style={{ minHeight: 38, fontSize: "0.8125rem" }}
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              title="End Date"
+            />
+          </div>
+        </div>
+      </div>
 
+      {/* Brand Selector */}
+      <div className="mb-3">
+        <label className="tracto-label">Brand</label>
+        <div className="tracto-input-wrapper">
+          <select
+            className="tracto-input"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+          >
+            <option value="">All Brands</option>
+            <option value="Mahindra">Mahindra</option>
+            <option value="Swaraj">Swaraj</option>
+            <option value="John Deere">John Deere</option>
+            <option value="Sonalika">Sonalika</option>
+            <option value="Farmtrac">Farmtrac</option>
+            <option value="Eicher">Eicher</option>
+            <option value="New Holland">New Holland</option>
+            <option value="Kubota">Kubota</option>
+          </select>
+        </div>
+      </div>
 
-                {/* Location / District */}
-                <div className="mb-3">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <label className="form-label fw-semibold small text-muted mb-0">Location / District</label>
-                    <button
-                      type="button"
-                      className="btn btn-link p-0 text-success fw-bold text-decoration-none small"
-                      onClick={() => {
-                        const user = JSON.parse(localStorage.getItem("user") || "null");
-                        const userLoc = user?.district || "Ahmedabad";
-                        setLocation(userLoc);
-                        const params = new URLSearchParams(searchParams);
-                        params.set("location", userLoc);
-                        setSearchParams(params);
-                      }}
-                    >
-                      📍 Tractors Near Me
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    placeholder="e.g. Ahmedabad, Sanand, Anand"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
-                  <span className="text-muted" style={{ fontSize: "0.7rem" }}>🗺️ Filter by State, District, City, Village, or Pincode</span>
-                </div>
-
-                {/* Filter Available By Work Dates */}
-                <div className="mb-3 bg-light p-2 rounded border">
-                  <label className="form-label fw-semibold small text-dark d-flex align-items-center gap-1 mb-1">
-                    📅 Check Availability Dates
-                  </label>
-                  <div className="row g-2">
-                    <div className="col-6">
-                      <input
-                        type="date"
-                        className="form-control form-control-sm"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <input
-                        type="date"
-                        className="form-control form-control-sm"
-                        value={endDate}
-                        min={startDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-muted" style={{ fontSize: "0.7rem" }}>Only show tractors free during these dates</span>
-                </div>
-
-
-
-                {/* Brand Selector */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-muted">Brand</label>
-                  <select className="form-select form-select-sm" value={brand} onChange={(e) => setBrand(e.target.value)}>
-                    <option value="">All Brands</option>
-                    <option value="Mahindra">Mahindra</option>
-                    <option value="Swaraj">Swaraj</option>
-                    <option value="John Deere">John Deere</option>
-                    <option value="Sonalika">Sonalika</option>
-                    <option value="Farmtrac">Farmtrac</option>
-                    <option value="Eicher">Eicher</option>
-                    <option value="New Holland">New Holland</option>
-                    <option value="Kubota">Kubota</option>
-                  </select>
-                </div>
-
-                {/* Rent Price Range */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-muted">Price Range (₹ / Day)</label>
-                  <div className="row g-2">
-                    <div className="col-6">
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="Min ₹"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="Max ₹"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Horsepower Range */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-muted">Horsepower (HP)</label>
-                  <div className="row g-2">
-                    <div className="col-6">
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="Min HP"
-                        value={minHp}
-                        onChange={(e) => setMinHp(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="Max HP"
-                        value={maxHp}
-                        onChange={(e) => setMaxHp(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Availability Filter */}
-                <div className="mb-3">
-                  <label className="form-label fw-semibold small text-muted">Availability Status</label>
-                  <select className="form-select form-select-sm" value={available} onChange={(e) => setAvailable(e.target.value)}>
-                    <option value="true">Available Now</option>
-                    <option value="">All Tractors</option>
-                  </select>
-                </div>
-
-                {/* Sort By */}
-                <div className="mb-4">
-                  <label className="form-label fw-semibold small text-muted">Sort Results By</label>
-                  <select className="form-select form-select-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                    <option value="newest">Newest Listed</option>
-                    <option value="lowest_price">Lowest Price (₹)</option>
-                    <option value="highest_price">Highest Price (₹)</option>
-                    <option value="rating">Highest Customer Rating ⭐</option>
-                  </select>
-                </div>
-
-                <button type="submit" className="btn btn-tracto-primary w-100 btn-sm rounded-pill fw-bold py-2">
-                  <FaSearch /> Search Tractors
-                </button>
-              </form>
+      {/* Rent Price Range */}
+      <div className="mb-3">
+        <label className="tracto-label">Price Range (₹ / Day)</label>
+        <div className="row g-2">
+          <div className="col-6">
+            <div className="tracto-input-wrapper">
+              <input
+                type="number"
+                className="tracto-input"
+                placeholder="Min ₹"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+              />
             </div>
           </div>
+          <div className="col-6">
+            <div className="tracto-input-wrapper">
+              <input
+                type="number"
+                className="tracto-input"
+                placeholder="Max ₹"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Horsepower Range */}
+      <div className="mb-3">
+        <label className="tracto-label">Horsepower (HP)</label>
+        <div className="row g-2">
+          <div className="col-6">
+            <div className="tracto-input-wrapper">
+              <input
+                type="number"
+                className="tracto-input"
+                placeholder="Min HP"
+                value={minHp}
+                onChange={(e) => setMinHp(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="tracto-input-wrapper">
+              <input
+                type="number"
+                className="tracto-input"
+                placeholder="Max HP"
+                value={maxHp}
+                onChange={(e) => setMaxHp(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Availability Status */}
+      <div className="mb-3">
+        <label className="tracto-label">Availability Status</label>
+        <div className="tracto-input-wrapper">
+          <select
+            className="tracto-input"
+            value={available}
+            onChange={(e) => setAvailable(e.target.value)}
+          >
+            <option value="true">Available Now</option>
+            <option value="">All Tractors</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Sort Results */}
+      <div className="mb-4">
+        <label className="tracto-label">Sort Results By</label>
+        <div className="tracto-input-wrapper">
+          <select
+            className="tracto-input"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="newest">Newest Listed</option>
+            <option value="lowest_price">Lowest Price (₹ / day)</option>
+            <option value="highest_price">Highest Price (₹ / day)</option>
+            <option value="rating">Highest Customer Rating ⭐</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="d-flex gap-2">
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          icon={<FaSearch />}
+        >
+          Apply Filters
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleReset}
+          title="Reset filters"
+        >
+          <FaRedo />
+        </Button>
+      </div>
+    </form>
+  );
+
+  return (
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
+      <Navbar />
+
+      <main className="container py-4 flex-grow-1">
+        {/* Header Title & Mobile Controls */}
+        <div className="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h1 className="h2 fw-extrabold text-dark m-0 font-heading">{t("exploreTitle") || "Agricultural Fleet Catalog"}</h1>
+            <p className="text-muted small m-0 mt-0.5">
+              Find top-performance farming tractors by brand, horsepower, implements, and rental rates
+            </p>
+          </div>
+
+          <div className="d-flex align-items-center gap-2">
+            <Badge variant="success" size="md">
+              {tractors.length} {t("available") || "Available"}
+            </Badge>
+
+            {/* Mobile Filter Toggle Button */}
+            <button
+              type="button"
+              className="btn btn-outline-success btn-sm rounded-pill d-lg-none d-flex align-items-center gap-1.5 px-3 py-1.5 fw-semibold"
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+            >
+              <FaFilter />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="badge bg-success text-white rounded-pill px-1.5 py-0.5" style={{ fontSize: "0.7rem" }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Filter Expandable Drawer */}
+        {mobileFilterOpen && (
+          <div className="d-lg-none mb-4 p-3 bg-white rounded-4 border shadow-md">
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <h5 className="fw-bold m-0 d-flex align-items-center gap-2">
+                <FaFilter className="text-success" /> Filter Tractors
+              </h5>
+              <button
+                type="button"
+                className="btn btn-link p-1 text-muted"
+                onClick={() => setMobileFilterOpen(false)}
+                aria-label="Close filters"
+              >
+                <FaTimes className="fs-5" />
+              </button>
+            </div>
+            {renderFilterForm()}
+          </div>
+        )}
+
+        <div className="row g-4">
+          {/* Desktop Filters Sidebar */}
+          <aside className="col-lg-3 d-none d-lg-block">
+            <div className="filter-box shadow-sm sticky-top" style={{ top: 90 }}>
+              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h5 className="fw-bold m-0 d-flex align-items-center gap-2 font-heading fs-6">
+                  <FaFilter className="text-success fs-6" /> Filter Catalog
+                </h5>
+                {activeFilterCount > 0 && (
+                  <button
+                    className="btn btn-link text-decoration-none p-0 text-muted small d-flex align-items-center gap-1"
+                    onClick={handleReset}
+                  >
+                    <FaRedo /> Reset ({activeFilterCount})
+                  </button>
+                )}
+              </div>
+              {renderFilterForm()}
+            </div>
+          </aside>
 
           {/* Tractor Cards Grid */}
-          <div className="col-lg-9">
+          <div className="col-12 col-lg-9">
             {loading ? (
               <div className="text-center py-5">
-                <div className="spinner-border text-success" role="status"></div>
+                <div className="tracto-spinner" style={{ width: "2.5rem", height: "2.5rem", color: "var(--primary-600)" }} />
+                <p className="text-muted small mt-2">Searching available machinery...</p>
               </div>
             ) : tractors.length === 0 ? (
-              <div className="glass-card p-5 text-center my-4">
-                <FaTractor className="fs-1 text-muted mb-3" />
-                <h5 className="fw-bold">No Tractors Found</h5>
-                <p className="text-muted small">Try broadening your search inputs or resetting the filters.</p>
-                <button className="btn btn-outline-success btn-sm rounded-pill px-4" onClick={handleReset}>
-                  Reset All Filters
-                </button>
+              <div className="bg-white rounded-4 p-5 border shadow-sm my-2">
+                <EmptyState
+                  icon={<FaTractor />}
+                  title="No Tractors Found"
+                  description="We couldn't find any tractors matching your search filters. Try adjusting your brand, location, or price filters."
+                  action={
+                    <Button variant="outline" size="sm" onClick={handleReset} icon={<FaRedo />}>
+                      Reset All Filters
+                    </Button>
+                  }
+                />
               </div>
             ) : (
-              <div className="row g-4">
+              <div className="row g-3 g-md-4">
                 {tractors.map((tractor) => (
-                  <div key={tractor.id} className="col-md-6 col-xl-4">
+                  <div key={tractor.id} className="col-12 col-sm-6 col-xl-4">
                     <TractorCard tractor={tractor} />
                   </div>
                 ))}
@@ -301,7 +410,7 @@ function TractorList() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

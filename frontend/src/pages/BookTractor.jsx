@@ -1,14 +1,37 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { FaCalendarAlt, FaClock, FaTractor, FaCheckCircle, FaExclamationTriangle, FaMapMarkerAlt, FaStar, FaCogs } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaTractor,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaMapMarkerAlt,
+  FaStar,
+  FaCogs,
+  FaArrowLeft,
+  FaArrowRight,
+  FaSeedling,
+  FaInfoCircle,
+} from "react-icons/fa";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { Input } from "../components/ui/Input";
 
 function BookTractor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  })();
 
+  const [currentStep, setCurrentStep] = useState(1);
   const [tractor, setTractor] = useState(null);
   const [implementsList, setImplementsList] = useState([]);
   const [selectedImplementIds, setSelectedImplementIds] = useState([]);
@@ -27,10 +50,10 @@ function BookTractor() {
   const [notes, setNotes] = useState("");
 
   // Land Size & Implement Calculator State
-  const [farmingWorkType, setFarmingWorkType] = useState("plowing"); // "plowing", "transport", "rotavator", "sowing", "harvesting", "leveling"
+  const [farmingWorkType, setFarmingWorkType] = useState("plowing");
   const [transportBags, setTransportBags] = useState(40);
   const [transportDistanceKm, setTransportDistanceKm] = useState(15);
-  const [landUnit, setLandUnit] = useState("bigha"); // "bigha", "acre", "guntha"
+  const [landUnit, setLandUnit] = useState("bigha");
   const [landSize, setLandSize] = useState(5);
   const [selectedCrop, setSelectedCrop] = useState("Cotton (કપાસ)");
 
@@ -40,8 +63,6 @@ function BookTractor() {
 
   const [existingBookings, setExistingBookings] = useState([]);
   const [isDateUnavailable, setIsDateUnavailable] = useState(false);
-
-
 
   useEffect(() => {
     if (!user) {
@@ -62,7 +83,9 @@ function BookTractor() {
       const bookRes = await api.get("bookings/");
       const bookingsData = bookRes.data.results || bookRes.data || [];
       const activeForTractor = bookingsData.filter(
-        (b) => (b.tractor === parseInt(id) || b.tractor_details?.id === parseInt(id)) && ["pending", "approved", "paid"].includes(b.status)
+        (b) =>
+          (b.tractor === parseInt(id) || b.tractor_details?.id === parseInt(id)) &&
+          ["pending", "approved", "paid"].includes(b.status)
       );
       setExistingBookings(activeForTractor);
     } catch (err) {
@@ -75,13 +98,13 @@ function BookTractor() {
 
   const handleToggleImplement = (implId) => {
     if (selectedImplementIds.includes(implId)) {
-      setSelectedImplementIds([]); // Deselect if already selected
+      setSelectedImplementIds([]);
     } else {
-      setSelectedImplementIds([implId]); // Only allow 1 implement at a time (physically 1 implement per tractor)
+      setSelectedImplementIds([implId]);
     }
   };
 
-  // Recalculate total amount and check date availability on changes
+  // Recalculate total amount and check date availability
   useEffect(() => {
     if (!tractor) return;
 
@@ -101,7 +124,6 @@ function BookTractor() {
       units = hourlyUnits || 1;
     }
 
-    // Check overlap with existing active bookings
     let overlap = false;
     if (!isNaN(reqStart) && !isNaN(reqEnd)) {
       overlap = existingBookings.some((b) => {
@@ -113,27 +135,37 @@ function BookTractor() {
 
     if (overlap) {
       setIsDateUnavailable(true);
-      setError("This tractor is not available for this particular date or time.");
+      setError("This tractor is already reserved for the selected date range. Please choose another date.");
     } else {
       setIsDateUnavailable(false);
       setError("");
     }
 
-    const baseRate = durationMode === "daily" ? parseFloat(tractor.rent_per_day) : parseFloat(tractor.rent_per_hour);
+    const baseRate =
+      durationMode === "daily" ? parseFloat(tractor.rent_per_day) : parseFloat(tractor.rent_per_hour);
     const baseTotal = baseRate * units;
 
     let implAddonFee = 0;
     implementsList.forEach((impl) => {
       if (selectedImplementIds.includes(impl.id)) {
-        const implRate = durationMode === "daily" ? parseFloat(impl.rent_per_day) : parseFloat(impl.rent_per_hour);
+        const implRate =
+          durationMode === "daily" ? parseFloat(impl.rent_per_day) : parseFloat(impl.rent_per_hour);
         implAddonFee += implRate * units;
       }
     });
 
     setImplementsTotal(implAddonFee);
     setTotalAmount(baseTotal + implAddonFee);
-  }, [startDate, endDate, durationMode, hourlyUnits, tractor, selectedImplementIds, implementsList, existingBookings]);
-
+  }, [
+    startDate,
+    endDate,
+    durationMode,
+    hourlyUnits,
+    tractor,
+    selectedImplementIds,
+    implementsList,
+    existingBookings,
+  ]);
 
   const getFilteredImplements = () => {
     if (!implementsList || implementsList.length === 0) return [];
@@ -144,7 +176,7 @@ function BookTractor() {
       const cat = (impl.category || "").toLowerCase();
 
       switch (farmingWorkType) {
-        case "plowing": // ખેડવા માટે (Cultivator, Plough, Harrow, Chisel)
+        case "plowing":
           return (
             cat === "cultivator" ||
             name.includes("plough") ||
@@ -154,7 +186,7 @@ function BookTractor() {
             desc.includes("cultivator") ||
             desc.includes("plough")
           );
-        case "rotavator": // રોટાવેટર (Rotavator, Rotary tiller)
+        case "rotavator":
           return (
             cat === "rotavator" ||
             name.includes("rotavator") ||
@@ -162,7 +194,7 @@ function BookTractor() {
             name.includes("tiller") ||
             desc.includes("rotavator")
           );
-        case "sowing": // વાવણી (Seed drill, Seeder, Planter)
+        case "sowing":
           return (
             cat === "seeder" ||
             name.includes("drill") ||
@@ -171,7 +203,7 @@ function BookTractor() {
             name.includes("planter") ||
             desc.includes("seed")
           );
-        case "transport": // પાક ટ્રાન્સપોર્ટ (Trolley, Trailer)
+        case "transport":
           return (
             cat === "trailer" ||
             name.includes("trailer") ||
@@ -180,7 +212,7 @@ function BookTractor() {
             desc.includes("trailer") ||
             desc.includes("trolley")
           );
-        case "leveling": // લેવલિંગ (Land Leveler, Laser Leveler)
+        case "leveling":
           return (
             cat === "leveler" ||
             name.includes("leveler") ||
@@ -188,7 +220,7 @@ function BookTractor() {
             name.includes("laser") ||
             desc.includes("leveler")
           );
-        case "harvesting": // કાપણી / થ્રેશર (Thresher, Harvester, Reaper)
+        case "harvesting":
           return (
             cat === "harvester" ||
             name.includes("thresher") ||
@@ -211,12 +243,57 @@ function BookTractor() {
       const desc = (impl.description || "").toLowerCase();
       const cat = (impl.category || "").toLowerCase();
 
-      if (typeId === "plowing") return cat === "cultivator" || name.includes("plough") || name.includes("cultivator") || name.includes("plow") || name.includes("harrow") || desc.includes("cultivator") || desc.includes("plough");
-      if (typeId === "rotavator") return cat === "rotavator" || name.includes("rotavator") || name.includes("rotary") || name.includes("tiller") || desc.includes("rotavator");
-      if (typeId === "sowing") return cat === "seeder" || name.includes("drill") || name.includes("seeder") || name.includes("sow") || name.includes("planter") || desc.includes("seed");
-      if (typeId === "transport") return cat === "trailer" || name.includes("trailer") || name.includes("trolley") || name.includes("tipping") || desc.includes("trailer");
-      if (typeId === "leveling") return cat === "leveler" || name.includes("leveler") || name.includes("level") || name.includes("laser") || desc.includes("leveler");
-      if (typeId === "harvesting") return cat === "harvester" || name.includes("thresher") || name.includes("harvester") || name.includes("reaper") || desc.includes("thresher");
+      if (typeId === "plowing")
+        return (
+          cat === "cultivator" ||
+          name.includes("plough") ||
+          name.includes("cultivator") ||
+          name.includes("plow") ||
+          name.includes("harrow") ||
+          desc.includes("cultivator") ||
+          desc.includes("plough")
+        );
+      if (typeId === "rotavator")
+        return (
+          cat === "rotavator" ||
+          name.includes("rotavator") ||
+          name.includes("rotary") ||
+          name.includes("tiller") ||
+          desc.includes("rotavator")
+        );
+      if (typeId === "sowing")
+        return (
+          cat === "seeder" ||
+          name.includes("drill") ||
+          name.includes("seeder") ||
+          name.includes("sow") ||
+          name.includes("planter") ||
+          desc.includes("seed")
+        );
+      if (typeId === "transport")
+        return (
+          cat === "trailer" ||
+          name.includes("trailer") ||
+          name.includes("trolley") ||
+          name.includes("tipping") ||
+          desc.includes("trailer")
+        );
+      if (typeId === "leveling")
+        return (
+          cat === "leveler" ||
+          name.includes("leveler") ||
+          name.includes("level") ||
+          name.includes("laser") ||
+          desc.includes("leveler")
+        );
+      if (typeId === "harvesting")
+        return (
+          cat === "harvester" ||
+          name.includes("thresher") ||
+          name.includes("harvester") ||
+          name.includes("reaper") ||
+          desc.includes("thresher")
+        );
       return true;
     });
 
@@ -228,7 +305,7 @@ function BookTractor() {
   };
 
   const handleSubmitBooking = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setError("");
 
     if (new Date(endDate) < new Date(startDate)) {
@@ -238,9 +315,10 @@ function BookTractor() {
 
     setSubmitting(true);
     try {
-      const generatedPurpose = farmingWorkType === "transport" 
-        ? `Crop Transport: ${transportBags} bags of ${selectedCrop} to Mandi (${transportDistanceKm} km)`
-        : purpose || `Agricultural ${farmingWorkType} on ${landSize} ${landUnit} ${selectedCrop} farm`;
+      const generatedPurpose =
+        farmingWorkType === "transport"
+          ? `Crop Transport: ${transportBags} bags of ${selectedCrop} to Mandi (${transportDistanceKm} km)`
+          : purpose || `Agricultural ${farmingWorkType} on ${landSize} ${landUnit} ${selectedCrop} farm`;
 
       await api.post("bookings/", {
         tractor: tractor.id,
@@ -258,7 +336,6 @@ function BookTractor() {
       });
 
       navigate("/my-bookings");
-
     } catch (err) {
       console.error("Error creating booking:", err);
       const errData = err.response?.data;
@@ -275,10 +352,11 @@ function BookTractor() {
 
   if (loading) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status"></div>
+        <div className="text-center py-5 my-auto">
+          <div className="tracto-spinner" style={{ width: "3rem", height: "3rem", color: "var(--primary-600)" }} />
+          <p className="text-muted small mt-3">Loading booking configuration...</p>
         </div>
       </div>
     );
@@ -286,76 +364,116 @@ function BookTractor() {
 
   if (!tractor) {
     return (
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
         <Navbar />
-        <div className="container py-5 text-center">
-          <div className="alert alert-danger">{error || "Tractor not found."}</div>
-          <Link to="/tractors" className="btn btn-success rounded-pill px-4">Back to Tractors</Link>
+        <div className="container py-5 text-center my-auto">
+          <div className="alert alert-danger mb-3">{error || "Tractor not found."}</div>
+          <Button variant="primary" onClick={() => navigate("/tractors")} icon={<FaArrowLeft />}>
+            Back to Catalog
+          </Button>
         </div>
       </div>
     );
   }
 
-  const defaultImg = "http://127.0.0.1:8000/media/tractors/mahindra_gen.png";
+  const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/").replace(/\/api\/?$/, "");
+  const defaultImg = `${BACKEND_BASE}/media/tractors/mahindra_gen.png`;
+  const tractorImg = tractor.image
+    ? tractor.image.startsWith("http")
+      ? tractor.image
+      : `${BACKEND_BASE}${tractor.image}`
+    : defaultImg;
 
-  const tractorImg = tractor.image ? (tractor.image.startsWith("http") ? tractor.image : `http://127.0.0.1:8000${tractor.image}`) : defaultImg;
+  const steps = [
+    { num: 1, title: "Work & Land" },
+    { num: 2, title: "Dates & Time" },
+    { num: 3, title: "Attachments" },
+    { num: 4, title: "Confirm & Book" },
+  ];
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--bg-app)" }}>
       <Navbar />
 
-      <div className="container py-4" style={{ maxWidth: 960 }}>
-        <h2 className="fw-extrabold text-dark mb-4">Book Tractor - {tractor.name}</h2>
+      <main className="container py-4 flex-grow-1" style={{ maxWidth: 1060 }}>
+        {/* Header and Step Wizard Bar */}
+        <div className="mb-4">
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <Link to={`/tractor/${tractor.id}`} className="text-muted small text-decoration-none d-flex align-items-center gap-1">
+              <FaArrowLeft /> Back to details
+            </Link>
+          </div>
+          <h1 className="h3 fw-extrabold text-dark m-0 font-heading">
+            Book Equipment: <span className="text-success">{tractor.name}</span>
+          </h1>
+          <p className="text-muted small m-0 mt-0.5">
+            Configure your agricultural operation in 4 simple steps
+          </p>
 
-        {error && <div className="alert alert-danger p-3 mb-4 rounded-3 d-flex align-items-center gap-2"><FaExclamationTriangle /> {error}</div>}
-
-        <div className="row g-4">
-          {/* Tractor Summary Card */}
-          <div className="col-md-5">
-            <div className="card glass-card border-0 overflow-hidden sticky-top" style={{ top: 80 }}>
-              <img src={tractorImg} className="card-img-top" alt={tractor.name} style={{ height: 200, objectFit: "cover" }} />
-              <div className="card-body p-3.5">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <span className="badge bg-success-subtle text-success fw-bold">{tractor.brand}</span>
-                  <span className="text-warning fw-bold small"><FaStar /> {tractor.avg_rating || "4.8"}</span>
-                </div>
-                <h5 className="fw-bold text-dark">{tractor.name}</h5>
-                <p className="text-muted small mb-3"><FaMapMarkerAlt className="text-danger" /> {tractor.location}</p>
-
-                <div className="bg-light p-3 rounded-3 mb-3 border">
-                  <div className="d-flex justify-content-between mb-1">
-                    <span className="text-muted small">Horsepower:</span>
-                    <span className="fw-semibold small">{tractor.horsepower} HP</span>
+          {/* Stepper Progress Bar */}
+          <div className="mt-4 p-3 bg-white rounded-4 border shadow-sm">
+            <div className="row g-2 text-center">
+              {steps.map((s) => (
+                <div key={s.num} className="col-3">
+                  <div
+                    onClick={() => {
+                      if (s.num < currentStep || !isDateUnavailable) setCurrentStep(s.num);
+                    }}
+                    className={`d-flex flex-column flex-sm-row align-items-center justify-content-center gap-1.5 p-2 rounded-3 cursor-pointer transition-all ${
+                      currentStep === s.num
+                        ? "bg-success text-white fw-bold shadow-sm"
+                        : currentStep > s.num
+                        ? "bg-success-subtle text-success fw-semibold"
+                        : "text-muted"
+                    }`}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <span
+                      className={`badge rounded-circle d-flex align-items-center justify-content-center ${
+                        currentStep === s.num
+                          ? "bg-white text-success"
+                          : currentStep > s.num
+                          ? "bg-success text-white"
+                          : "bg-light text-muted border"
+                      }`}
+                      style={{ width: 24, height: 24, fontSize: "0.75rem" }}
+                    >
+                      {currentStep > s.num ? "✓" : s.num}
+                    </span>
+                    <span className="small d-none d-sm-inline">{s.title}</span>
                   </div>
-                  <div className="d-flex justify-content-between mb-1">
-                    <span className="text-muted small">Daily Rate:</span>
-                    <span className="fw-bold text-success">₹{tractor.rent_per_day} / day</span>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted small">Hourly Rate:</span>
-                    <span className="fw-semibold text-dark">₹{tractor.rent_per_hour} / hr</span>
-                  </div>
                 </div>
-
-                <div className="small text-secondary">
-                  <strong>Owner:</strong> {tractor.owner_details?.first_name || "Ramesh Patel"} ({tractor.owner_details?.phone || "N/A"})
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Booking Form */}
-          <div className="col-md-7">
-            <div className="card glass-card border-0 p-4">
-              <h5 className="fw-bold text-dark mb-3 pb-2 border-bottom">Booking Details</h5>
+        {error && (
+          <div className="alert alert-danger p-3 mb-4 rounded-3 d-flex align-items-center gap-2 shadow-sm">
+            <FaExclamationTriangle className="flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-              <form onSubmit={handleSubmitBooking}>
-                {/* Agricultural Work Purpose Selection Grid */}
-                <div className="mb-4">
-                  <label className="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
-                    🚜 1. Select Agricultural Work Purpose (ખેતીકામનો હેતુ અને જરૂરિયાત પસંદ કરો)
-                  </label>
-                  <div className="row g-2">
+        <div className="row g-4">
+          {/* Main Wizard Step Content */}
+          <div className="col-12 col-lg-7">
+            <div className="bg-white rounded-4 border p-4 shadow-sm">
+              {/* STEP 1: Work Purpose & Land Size */}
+              {currentStep === 1 && (
+                <div>
+                  <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">
+                      1. Select Agricultural Work Purpose
+                    </h5>
+                    <Badge variant="primary">Step 1 of 4</Badge>
+                  </div>
+
+                  <p className="text-muted small mb-3">
+                    Choose what farming task you need this tractor for. We'll automatically suggest compatible implements.
+                  </p>
+
+                  <div className="row g-2 mb-4">
                     {[
                       { id: "plowing", icon: "🌾", title: "જમીન ખેડવા (Plowing)", sub: "MB Plough / Cultivator" },
                       { id: "transport", icon: "🚛", title: "પાક ટ્રાન્સપોર્ટ (Trolley)", sub: "Grain haulage to Mandi" },
@@ -364,347 +482,519 @@ function BookTractor() {
                       { id: "harvesting", icon: "🚜", title: "કાપણી / થ્રેશર (Thresher)", sub: "Threshing crop grains" },
                       { id: "leveling", icon: "📐", title: "લેવલિંગ (Land Leveler)", sub: "Surface laser leveling" },
                     ].map((item) => (
-                      <div key={item.id} className="col-6 col-md-4">
+                      <div key={item.id} className="col-6 col-sm-4">
                         <div
-                          className={`p-2.5 rounded-3 border text-center cursor-pointer transition-all ${
+                          className={`p-3 rounded-3 border text-center cursor-pointer transition-all ${
                             farmingWorkType === item.id
                               ? "bg-success text-white border-success shadow-sm"
-                              : "bg-light text-dark"
+                              : "bg-light text-dark hover-border-success"
                           }`}
                           onClick={() => handleSelectWorkType(item.id)}
                           style={{ cursor: "pointer", transition: "all 0.2s" }}
                         >
-                          <div className="fs-5 mb-0.5">{item.icon}</div>
+                          <div className="fs-4 mb-1">{item.icon}</div>
                           <div className="fw-bold small lh-sm">{item.title}</div>
-                          <div className={`mt-0.5 ${farmingWorkType === item.id ? "text-light opacity-90" : "text-muted"}`} style={{ fontSize: "0.68rem" }}>
+                          <div
+                            className={`mt-1 ${farmingWorkType === item.id ? "text-light opacity-90" : "text-muted"}`}
+                            style={{ fontSize: "0.7rem" }}
+                          >
                             {item.sub}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
 
-                {/* Conditional Work Details */}
-                {farmingWorkType === "transport" ? (
-                  <div className="bg-warning-subtle p-3 rounded-4 border border-warning-subtle mb-4">
-                    <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
-                      🚛 Crop Transport & Trolley Haulage Details (પાક માલવહન વિગતો)
-                    </div>
-                    <div className="text-muted small mb-2" style={{ fontSize: "0.75rem" }}>
-                      Trolley attachment is automatically bundled for transporting crop harvest to APMC Mandi or Warehouse.
-                    </div>
-                    <div className="row g-2 mt-1">
-                      <div className="col-6">
-                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Crop / Commodity (પાક)</label>
-                        <select className="form-select form-select-sm rounded-3" value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
-                          <option value="Cotton (કપાસ)">Cotton (કપાસ)</option>
-                          <option value="Groundnut (મગફળી)">Groundnut (મગફળી)</option>
-                          <option value="Wheat (ઘઉં)">Wheat (ઘઉં)</option>
-                          <option value="Paddy (ડાંગર)">Paddy (ડાંગર)</option>
-                          <option value="Cumin / Spices (જીરું)">Cumin / Spices (જીરું)</option>
-                        </select>
+                  {/* Transport or Land Size Calculator */}
+                  {farmingWorkType === "transport" ? (
+                    <div className="p-3.5 rounded-3 bg-warning-subtle text-dark border border-warning-subtle mb-4">
+                      <div className="fw-bold small mb-2 d-flex align-items-center gap-1.5">
+                        🚛 Trolley Haulage Details (પાક માલવહન વિગતો)
                       </div>
-                      <div className="col-3">
-                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Quantity (Bags/ગુણી)</label>
-                        <input
-                          type="number"
-                          min="5"
-                          className="form-control form-control-sm rounded-3"
-                          value={transportBags}
-                          onChange={(e) => setTransportBags(parseInt(e.target.value) || 10)}
-                        />
+                      <div className="row g-2">
+                        <div className="col-6">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Crop / Commodity</label>
+                          <select
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={selectedCrop}
+                            onChange={(e) => setSelectedCrop(e.target.value)}
+                          >
+                            <option value="Cotton (કપાસ)">Cotton (કપાસ)</option>
+                            <option value="Groundnut (મગફળી)">Groundnut (મગફળી)</option>
+                            <option value="Wheat (ઘઉં)">Wheat (ઘઉં)</option>
+                            <option value="Paddy (ડાંગર)">Paddy (ડાંગર)</option>
+                            <option value="Cumin / Spices (જીરું)">Cumin / Spices (જીરું)</option>
+                          </select>
+                        </div>
+                        <div className="col-3">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Bags (ગુણી)</label>
+                          <input
+                            type="number"
+                            min="5"
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={transportBags}
+                            onChange={(e) => setTransportBags(parseInt(e.target.value) || 10)}
+                          />
+                        </div>
+                        <div className="col-3">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Distance (km)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={transportDistanceKm}
+                            onChange={(e) => setTransportDistanceKm(parseInt(e.target.value) || 5)}
+                          />
+                        </div>
                       </div>
-                      <div className="col-3">
-                        <label className="form-label text-muted small" style={{ fontSize: "0.75rem" }}>Trip Distance (km)</label>
-                        <input
-                          type="number"
-                          min="1"
-                          className="form-control form-control-sm rounded-3"
-                          value={transportDistanceKm}
-                          onChange={(e) => setTransportDistanceKm(parseInt(e.target.value) || 5)}
-                        />
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-3 bg-success-subtle text-dark border border-success-subtle mb-4">
+                      <div className="fw-bold small mb-2 d-flex align-items-center gap-1.5">
+                        <FaSeedling className="text-success" /> Land Area & Fuel Estimator (ખેતરનું માપ અને અંદાજ)
                       </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Farm Land Size & Smart Plowing Calculator */
-                  <div className="bg-success-subtle p-3 rounded-4 border border-success-subtle mb-4">
-                    <div className="fw-bold text-dark mb-1 small d-flex align-items-center gap-1.5">
-                      🌾 Farm Land Size & Smart Plowing Calculator (ખેતરનું માપ અને અંદાજ)
-                    </div>
-                    <div className="text-muted small mb-3" style={{ fontSize: "0.75rem" }}>
-                      Enter your farm area and crop to automatically calculate required plowing hours and diesel consumption!
-                    </div>
+                      <div className="row g-2 align-items-center mb-2.5">
+                        <div className="col-4">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Area Unit</label>
+                          <select
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={landUnit}
+                            onChange={(e) => setLandUnit(e.target.value)}
+                          >
+                            <option value="bigha">વીઘા (Bigha)</option>
+                            <option value="acre">એકર (Acre)</option>
+                            <option value="guntha">ગૂંઠા (Guntha)</option>
+                          </select>
+                        </div>
+                        <div className="col-4">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Area Size</label>
+                          <input
+                            type="number"
+                            min="0.5"
+                            step="0.5"
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={landSize}
+                            onChange={(e) => setLandSize(parseFloat(e.target.value) || 1)}
+                          />
+                        </div>
+                        <div className="col-4">
+                          <label className="tracto-label mb-1" style={{ fontSize: "0.78rem" }}>Target Crop</label>
+                          <select
+                            className="tracto-input bg-white"
+                            style={{ minHeight: 38, fontSize: "0.85rem" }}
+                            value={selectedCrop}
+                            onChange={(e) => setSelectedCrop(e.target.value)}
+                          >
+                            <option value="Cotton">કપાસ (Cotton)</option>
+                            <option value="Groundnut">મગફળી (Groundnut)</option>
+                            <option value="Wheat">ઘઉં (Wheat)</option>
+                            <option value="Paddy">ડાંગર (Paddy)</option>
+                            <option value="Cumin">જીરું (Cumin)</option>
+                          </select>
+                        </div>
+                      </div>
 
-
-                  <div className="row g-2 align-items-center mb-2">
-                    <div className="col-4">
-                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Unit (એકમ)</label>
-                      <select className="form-select form-select-sm rounded-3" value={landUnit} onChange={(e) => setLandUnit(e.target.value)}>
-                        <option value="bigha">વીઘા (Bigha)</option>
-                        <option value="acre">એકર (Acre)</option>
-                        <option value="guntha">ગૂંઠા (Guntha)</option>
-                      </select>
-                    </div>
-                    <div className="col-4">
-                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Area Size (માપ)</label>
-                      <input
-                        type="number"
-                        min="0.5"
-                        step="0.5"
-                        className="form-control form-control-sm rounded-3"
-                        value={landSize}
-                        onChange={(e) => setLandSize(parseFloat(e.target.value) || 1)}
-                      />
-                    </div>
-                    <div className="col-4">
-                      <label className="form-label text-muted" style={{ fontSize: "0.75rem" }}>Crop (પાક)</label>
-                      <select className="form-select form-select-sm rounded-3" value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
-                        <option value="Cotton">કપાસ (Cotton)</option>
-                        <option value="Groundnut">મગફળી (Groundnut)</option>
-                        <option value="Wheat">ઘઉં (Wheat)</option>
-                        <option value="Paddy">ડાંગર (Paddy)</option>
-                        <option value="Cumin">જીરું (Cumin)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center bg-white p-2.5 rounded-3 border">
-                    <span className="small text-dark fw-bold">
-                      ⏱️ Est. Time: <span className="text-primary font-monospace">{Math.round(landSize * (landUnit === 'acre' ? 1.5 : landUnit === 'bigha' ? 0.75 : 0.05) * 10) / 10} hrs</span>
-                    </span>
-                    <span className="small text-dark fw-bold">
-                      ⛽ Diesel: <span className="text-warning font-monospace">{Math.round(landSize * (landUnit === 'acre' ? 5.2 : landUnit === 'bigha' ? 2.6 : 0.2) * 10) / 10} L</span>
-                    </span>
-                    <span className="small text-dark fw-bold">
-                      💰 Fuel Cost: <span className="text-success font-monospace">~₹{Math.round(landSize * (landUnit === 'acre' ? 5.2 : landUnit === 'bigha' ? 2.6 : 0.2) * 92)}</span>
-                    </span>
-                  </div>
-                </div>
-                )}
-
-                {/* Rental Type Selector */}
-                <div className="mb-4">
-
-                  <label className="form-label fw-semibold text-muted small">Rental Duration Type</label>
-                  <div className="d-flex gap-3">
-                    <div className={`flex-fill p-3 text-center rounded-3 border cursor-pointer ${durationMode === "daily" ? "border-success bg-success-subtle text-success font-weight-bold" : "bg-light text-muted"}`} onClick={() => setDurationMode("daily")} style={{ cursor: "pointer" }}>
-                      <FaCalendarAlt className="fs-5 mb-1 d-block mx-auto" /> Daily Rent
-                    </div>
-                    <div className={`flex-fill p-3 text-center rounded-3 border cursor-pointer ${durationMode === "hourly" ? "border-success bg-success-subtle text-success font-weight-bold" : "bg-light text-muted"}`} onClick={() => setDurationMode("hourly")} style={{ cursor: "pointer" }}>
-                      <FaClock className="fs-5 mb-1 d-block mx-auto" /> Hourly Rent
-                    </div>
-                  </div>
-                </div>
-
-                {durationMode === "daily" ? (
-                  <div className="row g-3 mb-4">
-                    <div className="col-6">
-                      <label className="form-label fw-semibold text-muted small">Start Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        min={todayStr}
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label fw-semibold text-muted small">End Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        min={startDate}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="row g-3 mb-4">
-                    <div className="col-6">
-                      <label className="form-label fw-semibold text-muted small">Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        min={todayStr}
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label fw-semibold text-muted small">Hours Required</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        min="1"
-                        max="24"
-                        value={hourlyUnits}
-                        onChange={(e) => setHourlyUnits(parseInt(e.target.value) || 1)}
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Implement & Attachment Add-on (Filtered dynamically by Selected Farming Work) */}
-                {implementsList.length > 0 && (() => {
-                  const filteredImplements = getFilteredImplements();
-                  const workTypeLabels = {
-                    plowing: "જમીન ખેડવા / ખેડાણ (Plowing)",
-                    rotavator: "રોટાવેટર (Rotavator)",
-                    sowing: "વાવણી (Seed Sowing)",
-                    transport: "પાક ટ્રાન્સપોર્ટ (Trolley / Transport)",
-                    harvesting: "કાપણી / થ્રેશર (Harvesting)",
-                    leveling: "લેવલિંગ (Land Leveler)",
-                  };
-
-                  return (
-                    <div className="mb-4 bg-light p-3 rounded-3 border">
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                          <FaCogs className="text-success" /> સાધન પસંદ કરો (Matching Equipment Attachment)
-                        </h6>
-                        <span className="badge bg-success-subtle text-success border border-success-subtle small" style={{ fontSize: "0.72rem" }}>
-                          ✓ {workTypeLabels[farmingWorkType] || "ખેતીકામ"} માટે યોગ્ય સાધનો
+                      <div className="d-flex justify-content-between align-items-center bg-white p-2.5 rounded-3 border small">
+                        <span className="fw-semibold">
+                          ⏱️ Est: <span className="text-primary font-monospace">{Math.round(landSize * (landUnit === "acre" ? 1.5 : landUnit === "bigha" ? 0.75 : 0.05) * 10) / 10} hrs</span>
+                        </span>
+                        <span className="fw-semibold">
+                          ⛽ Fuel: <span className="text-warning font-monospace">{Math.round(landSize * (landUnit === "acre" ? 5.2 : landUnit === "bigha" ? 2.6 : 0.2) * 10) / 10} L</span>
+                        </span>
+                        <span className="fw-semibold">
+                          💰 Cost: <span className="text-success font-monospace">~₹{Math.round(landSize * (landUnit === "acre" ? 5.2 : landUnit === "bigha" ? 2.6 : 0.2) * 92)}</span>
                         </span>
                       </div>
-                      <p className="text-muted small mb-2.5" style={{ fontSize: "0.78rem" }}>
-                        તમે પસંદ કરેલા ખેતીકામ (<strong>{workTypeLabels[farmingWorkType]}</strong>) મુજબના જ સાધનો અહીં દર્શાવવામાં આવ્યા છે.
-                      </p>
+                    </div>
+                  )}
 
-                      <div className="d-flex flex-column gap-2">
-                        {/* No Attachment Option */}
+                  <div className="d-flex justify-content-end">
+                    <Button variant="primary" onClick={() => setCurrentStep(2)} icon={<FaArrowRight />} iconPosition="right">
+                      Proceed to Dates & Duration
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: Dates & Duration */}
+              {currentStep === 2 && (
+                <div>
+                  <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">
+                      2. Choose Rental Dates & Duration
+                    </h5>
+                    <Badge variant="primary">Step 2 of 4</Badge>
+                  </div>
+
+                  {/* Daily vs Hourly Selection */}
+                  <div className="mb-4">
+                    <label className="tracto-label mb-2">Select Rental Type</label>
+                    <div className="row g-2">
+                      <div className="col-6">
                         <div
-                          className={`p-2.5 rounded border d-flex justify-content-between align-items-center cursor-pointer ${selectedImplementIds.length === 0 ? "bg-success-subtle border-success shadow-sm" : "bg-white"}`}
-                          onClick={() => setSelectedImplementIds([])}
+                          className={`p-3 rounded-3 border text-center cursor-pointer transition-all ${
+                            durationMode === "daily"
+                              ? "bg-success text-white border-success shadow-sm"
+                              : "bg-light text-muted"
+                          }`}
+                          onClick={() => setDurationMode("daily")}
                           style={{ cursor: "pointer" }}
                         >
-                          <div className="d-flex align-items-center gap-2">
-                            <input
-                              type="radio"
-                              name="selectedImplementRadio"
-                              className="form-check-input mt-0"
-                              checked={selectedImplementIds.length === 0}
-                              onChange={() => setSelectedImplementIds([])}
-                            />
-                            <div>
-                              <div className="fw-bold text-dark small">ફક્ત ટ્રેક્ટર (Only Tractor - No Attachment)</div>
-                              <div className="text-muted" style={{ fontSize: "0.75rem" }}>માત્ર ટ્રેક્ટર જોઈએ છે (Zero Extra Charges)</div>
-                            </div>
-                          </div>
-                          <span className="badge bg-secondary-subtle text-dark fw-semibold">₹0 Extra</span>
+                          <FaCalendarAlt className="fs-4 mb-1" />
+                          <div className="fw-bold">Daily Rent</div>
+                          <small className={durationMode === "daily" ? "text-light opacity-90" : "text-muted"}>
+                            ₹{tractor.rent_per_day} / day
+                          </small>
                         </div>
+                      </div>
 
-                        {/* Filtered Implement List */}
-                        {filteredImplements.length > 0 ? (
-                          filteredImplements.map((impl) => {
-                            const isChecked = selectedImplementIds.includes(impl.id);
-                            const rateStr = durationMode === "daily" ? `+₹${impl.rent_per_day}/day` : `+₹${impl.rent_per_hour}/hr`;
-                            return (
-                              <div
-                                key={impl.id}
-                                className={`p-2.5 rounded border d-flex justify-content-between align-items-center cursor-pointer ${isChecked ? "bg-success-subtle border-success shadow-sm" : "bg-white"}`}
-                                onClick={() => handleToggleImplement(impl.id)}
-                                style={{ cursor: "pointer" }}
-                              >
-                                <div className="d-flex align-items-center gap-2">
-                                  <input
-                                    type="radio"
-                                    name="selectedImplementRadio"
-                                    className="form-check-input mt-0"
-                                    checked={isChecked}
-                                    onChange={() => handleToggleImplement(impl.id)}
-                                  />
-                                  <div>
-                                    <div className="fw-bold text-dark small">{impl.name}</div>
-                                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>{impl.description}</div>
-                                  </div>
-                                </div>
-                                <span className="badge bg-success text-white fw-semibold">{rateStr}</span>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <div className="text-muted small p-2 bg-white rounded border text-center">
-                            આ ટ્રેક્ટર પાસે આ કામ માટેનું વધારાનું સાધન નથી. તમે ફક્ત ટ્રેક્ટર બુક કરી શકો છો.
-                          </div>
-                        )}
+                      <div className="col-6">
+                        <div
+                          className={`p-3 rounded-3 border text-center cursor-pointer transition-all ${
+                            durationMode === "hourly"
+                              ? "bg-success text-white border-success shadow-sm"
+                              : "bg-light text-muted"
+                          }`}
+                          onClick={() => setDurationMode("hourly")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <FaClock className="fs-4 mb-1" />
+                          <div className="fw-bold">Hourly Rent</div>
+                          <small className={durationMode === "hourly" ? "text-light opacity-90" : "text-muted"}>
+                            ₹{tractor.rent_per_hour} / hr
+                          </small>
+                        </div>
                       </div>
                     </div>
-                  );
-                })()}
+                  </div>
 
-                {/* Delivery & Dispatch Options (Uber / Rapido Style) */}
-                <div className="mb-3 bg-light p-3 rounded-3 border">
-                  <label className="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
-                    <FaMapMarkerAlt className="text-danger" /> Pickup / Farm Location (Dispatch Destination)
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Enter your Farm / Village address (e.g. Survey No. 42, Dholka, Ahmedabad)"
-                    value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
-                    required
-                  />
+                  {/* Date Pickers */}
+                  {durationMode === "daily" ? (
+                    <div className="row g-3 mb-4">
+                      <div className="col-12 col-sm-6">
+                        <label className="tracto-label">Start Date *</label>
+                        <div className="tracto-input-wrapper">
+                          <input
+                            type="date"
+                            className="tracto-input"
+                            min={todayStr}
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <label className="tracto-label">End Date *</label>
+                        <div className="tracto-input-wrapper">
+                          <input
+                            type="date"
+                            className="tracto-input"
+                            min={startDate}
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="row g-3 mb-4">
+                      <div className="col-12 col-sm-6">
+                        <label className="tracto-label">Work Date *</label>
+                        <div className="tracto-input-wrapper">
+                          <input
+                            type="date"
+                            className="tracto-input"
+                            min={todayStr}
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <label className="tracto-label">Required Hours (1 - 24) *</label>
+                        <div className="tracto-input-wrapper">
+                          <input
+                            type="number"
+                            className="tracto-input"
+                            min="1"
+                            max="24"
+                            value={hourlyUnits}
+                            onChange={(e) => setHourlyUnits(parseInt(e.target.value) || 1)}
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                  <label className="form-label fw-semibold text-muted small mb-1">Delivery / Dispatch Preference</label>
-                  <select className="form-select form-select-sm" defaultValue="owner_delivers">
-                    <option value="owner_delivers">🚜 Owner / Driver Delivers Tractor to My Farm</option>
-                    <option value="customer_pickup">🔑 Self Pickup from Owner Yard</option>
-                  </select>
+                  {isDateUnavailable && (
+                    <div className="alert alert-danger p-3 rounded-3 mb-4 small d-flex align-items-center gap-2">
+                      <FaExclamationTriangle className="flex-shrink-0" />
+                      <span>This tractor is already booked for this schedule. Please select alternative dates.</span>
+                    </div>
+                  )}
+
+                  <div className="d-flex justify-content-between">
+                    <Button variant="secondary" onClick={() => setCurrentStep(1)} icon={<FaArrowLeft />}>
+                      Previous
+                    </Button>
+                    <Button
+                      variant="primary"
+                      disabled={isDateUnavailable}
+                      onClick={() => setCurrentStep(3)}
+                      icon={<FaArrowRight />}
+                      iconPosition="right"
+                    >
+                      Proceed to Attachments
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: Implements / Attachments */}
+              {currentStep === 3 && (
+                <div>
+                  <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">
+                      3. Select Machinery Attachments
+                    </h5>
+                    <Badge variant="primary">Step 3 of 4</Badge>
+                  </div>
+
+                  <p className="text-muted small mb-3">
+                    Choose an attachment to hook up to the tractor or proceed with only the tractor at zero extra cost.
+                  </p>
+
+                  <div className="d-flex flex-column gap-2 mb-4">
+                    {/* Option: Tractor Only */}
+                    <div
+                      className={`p-3 rounded-3 border d-flex justify-content-between align-items-center cursor-pointer transition-all ${
+                        selectedImplementIds.length === 0
+                          ? "bg-success-subtle border-success shadow-sm"
+                          : "bg-white hover-border-success"
+                      }`}
+                      onClick={() => setSelectedImplementIds([])}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="d-flex align-items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name="selectedImplementRadio"
+                          className="form-check-input mt-0"
+                          checked={selectedImplementIds.length === 0}
+                          onChange={() => setSelectedImplementIds([])}
+                        />
+                        <div>
+                          <div className="fw-bold text-dark small">ફક્ત ટ્રેક્ટર (Only Tractor - No Attachment)</div>
+                          <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                            Tractor only with standard hitch connection
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant="neutral">₹0 Extra</Badge>
+                    </div>
+
+                    {/* Filtered Implement List */}
+                    {getFilteredImplements().length > 0 ? (
+                      getFilteredImplements().map((impl) => {
+                        const isChecked = selectedImplementIds.includes(impl.id);
+                        const rateStr =
+                          durationMode === "daily"
+                            ? `+₹${impl.rent_per_day}/day`
+                            : `+₹${impl.rent_per_hour}/hr`;
+                        return (
+                          <div
+                            key={impl.id}
+                            className={`p-3 rounded-3 border d-flex justify-content-between align-items-center cursor-pointer transition-all ${
+                              isChecked
+                                ? "bg-success-subtle border-success shadow-sm"
+                                : "bg-white hover-border-success"
+                            }`}
+                            onClick={() => handleToggleImplement(impl.id)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <div className="d-flex align-items-center gap-2.5">
+                              <input
+                                type="radio"
+                                name="selectedImplementRadio"
+                                className="form-check-input mt-0"
+                                checked={isChecked}
+                                onChange={() => handleToggleImplement(impl.id)}
+                              />
+                              <div>
+                                <div className="fw-bold text-dark small">{impl.name}</div>
+                                <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                                  {impl.description || "Farm implement attachment"}
+                                </div>
+                              </div>
+                            </div>
+                            <Badge variant="success">{rateStr}</Badge>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-muted small p-3 bg-light rounded-3 border text-center">
+                        No specific attachments listed for this work type. You can rent the tractor with standard linkage.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="d-flex justify-content-between">
+                    <Button variant="secondary" onClick={() => setCurrentStep(2)} icon={<FaArrowLeft />}>
+                      Previous
+                    </Button>
+                    <Button variant="primary" onClick={() => setCurrentStep(4)} icon={<FaArrowRight />} iconPosition="right">
+                      Review & Confirm
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4: Review, Dispatch Address & Final Submit */}
+              {currentStep === 4 && (
+                <div>
+                  <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 className="fw-extrabold text-dark m-0 font-heading">
+                      4. Dispatch Destination & Final Review
+                    </h5>
+                    <Badge variant="success">Final Step</Badge>
+                  </div>
+
+                  <form onSubmit={handleSubmitBooking}>
+                    {/* Farm Dispatch Location */}
+                    <div className="mb-3">
+                      <Input
+                        label="Pickup / Farm Destination Location"
+                        placeholder="Enter your Village / Farm Survey No. (e.g. Survey 42, Sanand, Ahmedabad)"
+                        value={purpose}
+                        onChange={(e) => setPurpose(e.target.value)}
+                        icon={<FaMapMarkerAlt className="text-danger" />}
+                        required
+                        helperText="The tractor owner or driver will coordinate delivery to this exact location"
+                      />
+                    </div>
+
+                    {/* Delivery Preference */}
+                    <div className="mb-3">
+                      <label className="tracto-label">Delivery Preference</label>
+                      <div className="tracto-input-wrapper">
+                        <select className="tracto-input" defaultValue="owner_delivers">
+                          <option value="owner_delivers">🚜 Owner / Driver Delivers Tractor to My Farm</option>
+                          <option value="customer_pickup">🔑 Self Pickup from Owner Yard</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Special Requests */}
+                    <div className="mb-4">
+                      <label className="tracto-label">Special Requests or Notes to Owner</label>
+                      <textarea
+                        className="tracto-input p-2.5 rounded-3 border"
+                        rows="2"
+                        placeholder="Add landmark details, timing preferences, or specific field instructions..."
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        style={{ width: "100%", outline: "none", borderColor: "var(--border-subtle)" }}
+                      />
+                    </div>
+
+                    <div className="d-flex justify-content-between pt-2 border-top">
+                      <Button variant="secondary" onClick={() => setCurrentStep(3)} icon={<FaArrowLeft />}>
+                        Previous
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="lg"
+                        isLoading={submitting}
+                        loadingText="Sending Request..."
+                        disabled={isDateUnavailable}
+                        icon={<FaCheckCircle />}
+                      >
+                        Submit Booking Request
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sticky Live Price Summary & Tractor Card */}
+          <div className="col-12 col-lg-5">
+            <div className="bg-white rounded-4 border overflow-hidden shadow-sm sticky-top" style={{ top: 90 }}>
+              <img
+                src={tractorImg}
+                alt={tractor.name}
+                className="w-100"
+                style={{ height: 180, objectFit: "cover" }}
+                onError={(e) => {
+                  e.target.src = defaultImg;
+                }}
+              />
+
+              <div className="p-3.5">
+                <div className="d-flex justify-content-between align-items-center mb-1.5">
+                  <Badge variant="primary" size="sm">{tractor.brand}</Badge>
+                  <div className="d-flex align-items-center gap-1 text-warning fw-bold small">
+                    <FaStar /> {tractor.avg_rating || "4.8"}
+                  </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="form-label fw-semibold text-muted small">Special Requests / Notes to Owner</label>
-                  <textarea
-                    className="form-control"
-                    rows="2"
-                    placeholder="Mention delivery preference or additional details..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  ></textarea>
-                </div>
+                <h5 className="fw-bold text-dark mb-1 font-heading">{tractor.name}</h5>
+                <p className="text-muted small mb-3 d-flex align-items-center gap-1">
+                  <FaMapMarkerAlt className="text-danger flex-shrink-0" />
+                  <span className="text-truncate">{tractor.location}</span>
+                </p>
 
-
-                {/* Price Calculation Summary */}
-                <div className="bg-success-subtle p-3 rounded-3 mb-4 border border-success-subtle">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <span className="text-secondary small">Tractor Rate ({durationMode}):</span>
+                {/* Configuration Breakdown */}
+                <div className="p-3 bg-light rounded-3 border mb-3 small">
+                  <div className="d-flex justify-content-between mb-1.5">
+                    <span className="text-muted">Work Purpose:</span>
+                    <span className="fw-semibold text-dark text-capitalize">{farmingWorkType}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-1.5">
+                    <span className="text-muted">Rental Schedule:</span>
                     <span className="fw-semibold text-dark">
-                      {durationMode === "daily" ? `₹${tractor.rent_per_day} × ${daysCount} Days` : `₹${tractor.rent_per_hour} × ${hourlyUnits} Hours`}
+                      {durationMode === "daily" ? `${daysCount} Day(s) [${startDate} to ${endDate}]` : `${hourlyUnits} Hour(s) on ${startDate}`}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-1.5">
+                    <span className="text-muted">Rate ({durationMode}):</span>
+                    <span className="fw-semibold text-dark">
+                      {durationMode === "daily" ? `₹${tractor.rent_per_day} / day` : `₹${tractor.rent_per_hour} / hr`}
                     </span>
                   </div>
                   {implementsTotal > 0 && (
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                      <span className="text-secondary small">Implements Add-on Fee:</span>
-                      <span className="fw-semibold text-success">+₹{implementsTotal}</span>
+                    <div className="d-flex justify-content-between mb-1.5 text-success">
+                      <span>Attachment Addon:</span>
+                      <span className="fw-bold">+₹{implementsTotal}</span>
                     </div>
                   )}
-                  <div className="d-flex justify-content-between align-items-center pt-2 border-top border-success-subtle">
-                    <span className="fw-bold text-dark fs-6">Total Rental Amount:</span>
-                    <span className="fs-3 fw-extrabold text-success">₹{totalAmount}</span>
+                  <hr className="my-2" />
+                  <div className="d-flex justify-content-between align-items-baseline">
+                    <span className="fw-bold text-dark fs-6">Estimated Total:</span>
+                    <span className="fs-3 fw-extrabold text-success font-heading">₹{totalAmount}</span>
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className={`btn w-100 py-3 rounded-pill fw-bold fs-6 ${isDateUnavailable ? "btn-secondary cursor-not-allowed" : "btn-tracto-primary"}`}
-                  disabled={submitting || isDateUnavailable}
-                >
-                  {submitting ? "Sending Request..." : isDateUnavailable ? "⚠️ Tractor Not Available For Selected Dates" : "Send Booking Request"}
-                </button>
-
-              </form>
+                <div className="small text-muted d-flex align-items-center gap-2">
+                  <FaInfoCircle className="text-success flex-shrink-0" />
+                  <span>No payment required now. Pay online or in cash upon field delivery.</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

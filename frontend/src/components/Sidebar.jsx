@@ -1,12 +1,39 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaTachometerAlt, FaTractor, FaBookmark, FaHeart, FaPlusCircle, FaUsers, FaChartBar, FaUserCheck, FaSignOutAlt, FaBell, FaCreditCard, FaCommentDots, FaRupeeSign } from "react-icons/fa";
+import {
+  FaTachometerAlt,
+  FaTractor,
+  FaBookmark,
+  FaHeart,
+  FaPlusCircle,
+  FaUsers,
+  FaChartBar,
+  FaUserCheck,
+  FaSignOutAlt,
+  FaBell,
+  FaCreditCard,
+  FaCommentDots,
+  FaRupeeSign,
+  FaBars,
+  FaTimes,
+  FaShieldAlt,
+} from "react-icons/fa";
 import { useLanguage } from "../context/LanguageContext";
+import { Badge } from "./ui/Badge";
 
 function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  })();
 
   if (!user) return null;
 
@@ -17,100 +44,136 @@ function Sidebar() {
     navigate("/login");
   };
 
+  const navLinks = [
+    // Customer Menu
+    ...(user.role === "customer"
+      ? [
+          { to: "/customer-dashboard", label: t("dashboard") || "Dashboard", icon: <FaTachometerAlt /> },
+          { to: "/my-bookings", label: t("myBookings") || "My Bookings", icon: <FaBookmark /> },
+          { to: "/favorites", label: t("wishlist") || "Wishlist", icon: <FaHeart /> },
+          { to: "/notifications", label: t("notifications") || "Notifications", icon: <FaBell /> },
+          { to: "/profile", label: t("myProfile") || "My Profile", icon: <FaUserCheck /> },
+        ]
+      : []),
+
+    // Owner Menu
+    ...(user.role === "owner"
+      ? [
+          { to: "/owner-dashboard", label: "Dashboard", icon: <FaTachometerAlt /> },
+          { to: "/my-tractors", label: "My Tractors", icon: <FaTractor /> },
+          { to: "/add-tractor", label: "Add Tractor", icon: <FaPlusCircle /> },
+          { to: "/owner-bookings", label: "Booking Requests", icon: <FaBookmark /> },
+          { to: "/owner-earnings", label: "Earnings", icon: <FaRupeeSign /> },
+          { to: "/profile", label: "My Profile", icon: <FaUserCheck /> },
+        ]
+      : []),
+
+    // Admin Menu
+    ...(user.role === "admin"
+      ? [
+          { to: "/admin-dashboard", label: "Admin Dashboard", icon: <FaTachometerAlt /> },
+          { to: "/admin-users", label: "User Management", icon: <FaUsers /> },
+          { to: "/admin-tractors", label: "Tractor Approvals", icon: <FaTractor /> },
+          { to: "/admin-bookings", label: "Bookings", icon: <FaBookmark /> },
+          { to: "/admin-payments", label: "Payments", icon: <FaCreditCard /> },
+          { to: "/admin-reviews", label: "Reviews", icon: <FaCommentDots /> },
+          { to: "/admin-reports", label: "Reports", icon: <FaChartBar /> },
+          { to: "/profile", label: "Admin Profile", icon: <FaUserCheck /> },
+        ]
+      : []),
+  ];
+
   return (
-    <div className="sidebar-tracto p-3 d-flex flex-column" style={{ minHeight: "calc(100vh - 64px)" }}>
-      <div className="px-2 py-3 mb-2 border-bottom">
-        <div className="fw-bold text-dark fs-6">{user.first_name ? `${user.first_name} ${user.last_name || ''}` : user.email}</div>
-        <div className="small text-muted text-capitalize">{t(user.role) || user.role} Account</div>
+    <>
+      {/* Mobile Dashboard Bar (Visible only on mobile screens < lg) */}
+      <div className="d-lg-none w-100 bg-white border-bottom px-3 py-2.5 shadow-sm">
+        <div className="d-flex align-items-center justify-content-between">
+          <div className="d-flex align-items-center gap-2">
+            <div className="fw-bold text-dark small text-truncate" style={{ maxWidth: 180 }}>
+              {user.first_name ? `${user.first_name} ${user.last_name || ""}` : user.email}
+            </div>
+            <Badge variant={user.role === "owner" ? "warning" : user.role === "admin" ? "danger" : "success"} size="sm">
+              {user.role}
+            </Badge>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline-success btn-sm rounded-pill d-flex align-items-center gap-1.5 px-3 py-1 fw-bold"
+            onClick={() => setMobileExpanded(!mobileExpanded)}
+            aria-expanded={mobileExpanded}
+          >
+            {mobileExpanded ? <FaTimes /> : <FaBars />}
+            <span>Menu</span>
+          </button>
+        </div>
+
+        {mobileExpanded && (
+          <div className="pt-3 pb-1 border-top mt-2">
+            <nav className="d-flex flex-column gap-1">
+              {navLinks.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`sidebar-link ${isActive(item.to) ? "active" : ""}`}
+                  onClick={() => setMobileExpanded(false)}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+              <button
+                type="button"
+                className="btn btn-outline-danger btn-sm rounded-pill mt-2 d-flex align-items-center justify-content-center gap-2 py-2"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
 
-      <nav className="nav flex-column mb-auto">
-        {/* Customer Menu */}
-        {user.role === "customer" && (
-          <>
-            <Link to="/customer-dashboard" className={`sidebar-link ${isActive("/customer-dashboard") ? "active" : ""}`}>
-              <FaTachometerAlt /> {t("dashboard")}
-            </Link>
-            <Link to="/my-bookings" className={`sidebar-link ${isActive("/my-bookings") ? "active" : ""}`}>
-              <FaBookmark /> {t("myBookings")}
-            </Link>
-            <Link to="/favorites" className={`sidebar-link ${isActive("/favorites") ? "active" : ""}`}>
-              <FaHeart /> {t("wishlist")}
-            </Link>
-            <Link to="/notifications" className={`sidebar-link ${isActive("/notifications") ? "active" : ""}`}>
-              <FaBell /> {t("notifications") || "Notifications"}
-            </Link>
-            <Link to="/profile" className={`sidebar-link ${isActive("/profile") ? "active" : ""}`}>
-              <FaUserCheck /> {t("myProfile")}
-            </Link>
-          </>
-        )}
+      {/* Desktop Sidebar (Default view for >= lg screens) */}
+      <div className="sidebar-tracto d-none d-lg-flex">
+        {/* User Profile Card Header */}
+        <div className="p-3 mb-3 bg-light rounded-3 border">
+          <div className="fw-bold text-dark fs-6 text-truncate">
+            {user.first_name ? `${user.first_name} ${user.last_name || ""}` : user.email}
+          </div>
+          <div className="d-flex align-items-center justify-content-between mt-1">
+            <Badge variant={user.role === "owner" ? "warning" : user.role === "admin" ? "danger" : "success"} size="sm">
+              {user.role} Account
+            </Badge>
+            {user.role === "admin" && <FaShieldAlt className="text-danger small" />}
+          </div>
+        </div>
 
+        {/* Links Navigation */}
+        <nav className="nav flex-column mb-auto gap-1">
+          {navLinks.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`sidebar-link ${isActive(item.to) ? "active" : ""}`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
 
-        {/* Owner Menu */}
-        {user.role === "owner" && (
-          <>
-            <Link to="/owner-dashboard" className={`sidebar-link ${isActive("/owner-dashboard") ? "active" : ""}`}>
-              <FaTachometerAlt /> Dashboard
-            </Link>
-            <Link to="/my-tractors" className={`sidebar-link ${isActive("/my-tractors") ? "active" : ""}`}>
-              <FaTractor /> My Tractors
-            </Link>
-            <Link to="/add-tractor" className={`sidebar-link ${isActive("/add-tractor") ? "active" : ""}`}>
-              <FaPlusCircle /> Add Tractor
-            </Link>
-            <Link to="/owner-bookings" className={`sidebar-link ${isActive("/owner-bookings") ? "active" : ""}`}>
-              <FaBookmark /> Booking Requests
-            </Link>
-            <Link to="/owner-earnings" className={`sidebar-link ${isActive("/owner-earnings") ? "active" : ""}`}>
-              <FaRupeeSign /> Earnings
-            </Link>
-            <Link to="/profile" className={`sidebar-link ${isActive("/profile") ? "active" : ""}`}>
-              <FaUserCheck /> My Profile
-            </Link>
-          </>
-        )}
-
-        {/* Admin Menu */}
-        {user.role === "admin" && (
-          <>
-            <Link to="/admin-dashboard" className={`sidebar-link ${isActive("/admin-dashboard") ? "active" : ""}`}>
-              <FaTachometerAlt /> Admin Dashboard
-            </Link>
-            <Link to="/admin-users" className={`sidebar-link ${isActive("/admin-users") ? "active" : ""}`}>
-              <FaUsers /> User Management
-            </Link>
-            <Link to="/admin-tractors" className={`sidebar-link ${isActive("/admin-tractors") ? "active" : ""}`}>
-              <FaTractor /> Tractor Approvals
-            </Link>
-            <Link to="/admin-bookings" className={`sidebar-link ${isActive("/admin-bookings") ? "active" : ""}`}>
-              <FaBookmark /> Bookings
-            </Link>
-            <Link to="/admin-payments" className={`sidebar-link ${isActive("/admin-payments") ? "active" : ""}`}>
-              <FaCreditCard /> Payments
-            </Link>
-            <Link to="/admin-reviews" className={`sidebar-link ${isActive("/admin-reviews") ? "active" : ""}`}>
-              <FaCommentDots /> Reviews
-            </Link>
-            <Link to="/admin-reports" className={`sidebar-link ${isActive("/admin-reports") ? "active" : ""}`}>
-              <FaChartBar /> Reports
-            </Link>
-            <Link to="/profile" className={`sidebar-link ${isActive("/profile") ? "active" : ""}`}>
-              <FaUserCheck /> Admin Profile
-            </Link>
-          </>
-        )}
-      </nav>
-
-      <div className="pt-3 border-top mt-3">
-        <button
-          className="btn btn-outline-danger w-100 rounded-pill d-flex align-items-center justify-content-center gap-2 fw-bold"
-          onClick={handleLogout}
-        >
-          <FaSignOutAlt /> Logout
-        </button>
+        {/* Bottom Logout Button */}
+        <div className="pt-3 border-top mt-3">
+          <button
+            type="button"
+            className="btn btn-outline-danger w-100 rounded-pill d-flex align-items-center justify-content-center gap-2 fw-bold py-2"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt /> Logout
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

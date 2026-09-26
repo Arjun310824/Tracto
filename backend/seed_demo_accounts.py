@@ -75,6 +75,27 @@ for c in customers_data:
 
 print(f"Created/Verified {len(created_customers)} Customer accounts.")
 
+# 2.1 Create Admin User
+admin_user, admin_created = User.objects.get_or_create(
+    email="admin@tracto.com",
+    defaults={
+        "first_name": "Tracto",
+        "last_name": "Admin",
+        "role": "admin",
+        "is_staff": True,
+        "is_superuser": True,
+        "phone": "9999999999",
+        "village": "Gandhinagar",
+        "district": "Gandhinagar",
+        "state": "Gujarat",
+        "pincode": "382010",
+    }
+)
+if admin_created:
+    admin_user.set_password("admin123")
+    admin_user.save()
+print("Created/Verified Admin account (admin@tracto.com).")
+
 # 3. Create Tractors and Implements for Owners
 tractors_seed = [
     {
